@@ -1,0 +1,8 @@
+{
+  "name": "madeira",
+  "version": "0.0.1",
+  "dependencies": {
+    "node-dir": "^0.1.15",
+    "tika": "^1.6.0"
+  }
+}
