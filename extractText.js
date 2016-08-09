@@ -10,8 +10,8 @@ var options = {
 
   contentType: 'application/pdf',
   ocrLanguage: 'por',
-  pdfExtractInlineImages: true,
-  pdfExtractUniqueInlineImagesOnly: true,
+  pdfEnableAutoSpace: true,
+  pdfExtractInlineImages: true
 };
 
 (function init() {
@@ -21,9 +21,9 @@ var options = {
 
 function readFiles(callback) {
 
-  dir.files(inputFolder, function(err, files) {
+  dir.files(inputFolder, function(error, files) {
 
-    if (err) throw err;
+    if (error) throw error;
 
     files = files.filter(function (file) {
 
@@ -38,25 +38,27 @@ function processFiles(files) {
 
   var filesCount = files.length;
 
+  console.log('Started file processing (' + (new Date().toLocaleString()) + ')');
+
   (function recurse() {
 
     if (files.length > 0) {
 
-      console.log('Processing file ' + files.length + ' of ' + filesCount);
+      console.log('Processing file ' + (filesCount - files.length + 1) + ' of ' + filesCount);
 
       extractText(files.pop(), recurse);
     } else {
 
-      console.log('Finished processing ' + filesCount + ' files');
+      console.log('Finished processing ' + filesCount + ' files (' + (new Date().toLocaleString()) + ')');
     }
   })(files);
 }
 
 function extractText(filePath, callback) {
 
-  tika.text(filePath, options, function (err, text) {
+  tika.text(filePath, options, function (error, text) {
 
-    if (err) throw err;
+    if (error) throw error;
 
     var fileName = filePath.substr(filePath.lastIndexOf('/') + 1);
 

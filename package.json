@@ -2,7 +2,9 @@
   "name": "madeira",
   "version": "0.0.1",
   "dependencies": {
+    "elasticsearch": "^11.0.1",
+    "express": "^4.14.0",
     "node-dir": "^0.1.15",
-    "tika": "^1.6.0"
+    "tika": "git@github.com:ICIJ/node-tika.git#master"
   }
 }
