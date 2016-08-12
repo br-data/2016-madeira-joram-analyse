@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Mammon Suche</title>
+
+</head>
+
+<body>
+
+  <main class="main">
+
+    <form>
+      <input id="search" type="search">
+      <button id="button" type="button">Suchen</button>
+    </form>
+
+    <div id="results"></div>
+
+  </main>
+
+  <script type="text/javascript">
+
+    var search, button;
+
+    document.addEventListener('DOMContentLoaded', init, false);
+
+    function init() {
+
+      $search = document.getElementById('search');
+      $button = document.getElementById('button');
+      $results = document.getElementById('results');
+
+      bindEvents();
+    }
+
+    function search() {
+
+      var query = $search.value;
+
+      getJSON(('http://localhost:3005/search/' + query), renderResults);
+    }
+
+    function renderResults(results) {
+
+      var hits = results.hits.hits;
+
+      for (var hit in hits) {
+
+        var fileName = hits[hit]._source.file;
+
+        console.log(hits[hit]);
+
+        createElement('p', $results, ['textContent', fileName]);
+      }
+    }
+
+    function getJSON(path, callback) {
+
+      var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+
+      httpRequest.onreadystatechange = function() {
+
+        if (httpRequest.readyState === 4 || httpRequest.readyState === 0) {
+
+          if (httpRequest.status === 200) {
+
+            var data = JSON.parse(httpRequest.responseText);
+
+            if (callback) {
+
+              callback(data);
+            }
+          }
+        }
+      };
+
+      httpRequest.open('GET', path);
+      httpRequest.send();
+    }
+
+    function createElement(type, parent) {
+
+      var element = document.createElement(type);
+
+      for (var i = 2; i < arguments.length; i++) {
+
+        // Check if object is an array
+        if (Object.prototype.toString.call(arguments[i]) === '[object Array]') {
+
+          element[arguments[i][0]] = arguments[i][1];
+        }
+      }
+
+      if (parent && isElement(parent)) {
+
+        parent.appendChild(element);
+      } else {
+
+        return element;
+      }
+    }
+
+    function isElement(o){
+
+      return (
+        typeof HTMLElement === 'object' ? o instanceof HTMLElement :
+        o && typeof o === 'object' && o !== null && o.nodeType === 1 && typeof o.nodeName==='string'
+      );
+    }
+
+    function bindEvents() {
+
+      $button.addEventListener('click', search, false);
+    }
+
+  </script>
+
+</body>
