@@ -18,7 +18,7 @@ router.get('/', function(req, res) {
   res.json({ message: 'Express is running' });
 });
 
-router.get('/search/:input', function (req, res) {
+router.get('/match/:input', function (req, res) {
 
   var query = req.params.input;
 
@@ -28,6 +28,81 @@ router.get('/search/:input', function (req, res) {
     body: {
       query: {
         match: {
+          body: query
+        }
+      },
+      highlight : {
+        fields : {
+          body : {}
+        }
+      }
+    }
+  }, function (error, result) {
+
+    res.json(result);
+  });
+});
+
+router.get('/wildcard/:input', function (req, res) {
+
+  var query = req.params.input;
+
+  client.search({
+    index: index,
+    size: 1000,
+    body: {
+      query: {
+        wildcard: {
+          body: query
+        }
+      },
+      highlight : {
+        fields : {
+          body : {}
+        }
+      }
+    }
+  }, function (error, result) {
+
+    res.json(result);
+  });
+});
+
+router.get('/regexp/:input', function (req, res) {
+
+  var query = req.params.input;
+
+  client.search({
+    index: index,
+    size: 1000,
+    body: {
+      query: {
+        regexp: {
+          body: query
+        }
+      },
+      highlight : {
+        fields : {
+          body : {}
+        }
+      }
+    }
+  }, function (error, result) {
+
+    res.json(result);
+  });
+});
+
+router.get('/fuzzy/:input', function (req, res) {
+
+  var query = req.params.input;
+
+  client.search({
+    index: index,
+    size: 1000,
+    body: {
+      query: {
+        fuzzy: {
           body: query
         }
       },

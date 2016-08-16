@@ -28,15 +28,24 @@
       margin: 0 auto;
     }
 
-    input, button {
-      display: inline-block;
-      font-size: 1em;
-      line-height: 1em;
-      height: 2em;
-    }
-
     form {
       margin-bottom: 50px;
+    }
+
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      min-width: 0;
+    }
+
+    input, button, label {
+      font-size: 1em;
+      line-height: 1em;
+    }
+
+    legend {
+      display: inline-block;
     }
 
     input:focus, button:focus {
@@ -52,6 +61,11 @@
       white-space: nowrap;
       display: block;
       text-overflow: ellipsis
+    }
+
+    #search, #button {
+      height: 2em;
+      display: inline-block;
     }
 
     #search {
@@ -78,6 +92,10 @@
     #button:hover {
       background: #3a77ca;
       border-color: #3a77ca;
+    }
+
+    .options {
+      margin-top: 1em;
     }
 
     .document {
@@ -158,11 +176,25 @@
 
   <main class="main">
 
-    <h1>Mammon Search</h1>
+    <h1>Mammon Suche</h1>
 
     <form>
-      <input id="search" type="search">
-      <button id="button" type="button"><span>Suchen</span></button>
+      <fieldset>
+        <input id="search" type="search">
+        <button id="button" type="button"><span>Suchen</span></button>
+      </fieldset>
+
+      <fieldset class="options">
+        <label><strong>Suchoptionen: </strong></label>
+        <input id="match" type="radio" name="mode" value="match" checked>
+        <label for="match">Standard</label>
+        <input id="fuzzy" type="radio" name="mode" value="wildcard">
+        <label for="fuzzy">Wildc?rd*</label>
+        <input id="fuzzy" type="radio" name="mode" value="fuzzy">
+        <label for="fuzzy">Fuzzi</label>
+        <input id="regex" type="radio" name="mode" value="regexp">
+        <label for="regex">/Regex./</label>
+      </fieldset>
     </form>
 
     <div id="results"></div>
@@ -187,8 +219,10 @@
     function search() {
 
       var query = $search.value;
+      var mode = document.querySelector('input[name="mode"]:checked').value;
+      var url = encodeURI('http://localhost:3005/' + mode + '/' + query);
 
-      getJSON(('http://localhost:3005/search/' + query), renderResults);
+      getJSON(url, renderResults);
     }
 
     function renderResults(results) {
