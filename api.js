@@ -24,6 +24,7 @@ router.get('/search/:input', function (req, res) {
 
   client.search({
     index: index,
+    size: 1000,
     body: {
       query: {
         match: {

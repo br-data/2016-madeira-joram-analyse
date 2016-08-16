@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Mammon Suche</title>
+
+  <style type="text/css">
+
+    html {
+      box-sizing: border-box;
+    }
+
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      margin: 2em;
+    }
+
+    .main {
+      width: 100%;
+      max-width: 840px;
+      margin: 0 auto;
+    }
+
+    input, button {
+      display: inline-block;
+      font-size: 1em;
+      line-height: 1em;
+      height: 2em;
+    }
+
+    form {
+      margin-bottom: 50px;
+    }
+
+    input:focus, button:focus {
+      outline: 0;
+    }
+
+    input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0px 1000px white inset;
+    }
+
+    button span {
+      overflow: hidden;
+      white-space: nowrap;
+      display: block;
+      text-overflow: ellipsis
+    }
+
+    #search {
+      width: 85%;
+      padding-right: .5em;
+      border: 2px solid lightgrey;
+      border-radius: 4px;
+    }
+
+    #search:focus {
+      border-color: #BFBFBF;
+    }
+
+    #button {
+      width: 14%;
+      float: right;
+      color: white;
+      background: #4185e1;
+      border: 2px solid #4185e1;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #button:hover {
+      background: #3a77ca;
+      border-color: #3a77ca;
+    }
+
+    .document {
+      margin: 20px 0 40px;
+      padding: 10px;
+    }
+
+    .paper {
+      position: relative;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+    }
+
+    .paper: before, .paper: after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      top: 50%;
+      bottom: 0;
+      left: 10px;
+      right: 10px;
+      border-radius: 100px / 10px;
+    }
+
+    .header {
+      margin-top: 5px;
+    }
+
+    .date, .title, .file {
+      color: #808080;
+    }
+
+    .download {
+      float: right;
+      cursor: pointer;
+    }
+
+    .download a {
+      display: inline-block;
+      font-size: .8em;
+      padding: 4px 5px;
+      background: #3cb371;
+      border-radius: 3px;
+      margin-right: 3px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .download a:hover {
+      background: #36a065;
+    }
+
+    .hit {
+      font-size: .9em;
+    }
+
+    .hit em {
+      font-style: normal;
+      font-weight: bold;
+      background: #ffff00;
+    }
+
+    @media (max-width: 620px) {
+
+      #search {
+        width: 65%;
+      }
+
+      #button {
+        width: 34%;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <main class="main">
+
+    <h1>Mammon Search</h1>
+
+    <form>
+      <input id="search" type="search">
+      <button id="button" type="button"><span>Suchen</span></button>
+    </form>
+
+    <div id="results"></div>
+
+  </main>
+
+  <script type="text/javascript">
+
+    var search, button;
+
+    document.addEventListener('DOMContentLoaded', init, false);
+
+    function init() {
+
+      $search = document.getElementById('search');
+      $button = document.getElementById('button');
+      $results = document.getElementById('results');
+
+      bindEvents();
+    }
+
+    function search() {
+
+      var query = $search.value;
+
+      getJSON(('http://localhost:3005/search/' + query), renderResults);
+    }
+
+    function renderResults(results) {
+
+      var docs = results.hits.hits;
+      var hitCount = 0;
+
+      docs.sort(function (a, b) {
+
+        return new Date(b._source.date) - new Date(a._source.date);
+      });
+
+      emptyElement($results);
+
+      var $count = createElement('p', $results, ['className', 'count']);
+
+      for (var doc in docs) {
+
+        var name = docs[doc]._source.name;
+        var series = docs[doc]._source.series;
+        var issue = docs[doc]._source.issue;
+        var supplement = docs[doc]._source.issue;
+        var date = new Date(docs[doc]._source.date).toLocaleDateString();
+        var file = docs[doc]._source.file;
+        var hits = docs[doc].highlight.body;
+        var score = docs[doc]._score;
+
+        var $doc = createElement('div', $results, ['className', 'document paper']);
+
+        var $download = createElement('div', $doc, ['className', 'download']);
+        createElement('a', $download, ['textContent', 'PDF'], ['className', 'pdf'],
+          ['href', ('../pdf/' + file.replace('.txt', ''))], ['target', '_blank']);
+        createElement('a', $download, ['textContent', 'Text'], ['className', 'text'],
+          ['href', ('../text/' + file)], ['target', '_blank']);
+
+        var $docHeader = createElement('p', $doc, ['className', 'header']);
+        createElement('strong', $docHeader, ['textContent', (date + ' ')], ['className', 'date']);
+        createElement('span', $docHeader, ['textContent', ('JORAM' + ' ' + series + ' ' + issue + ' ' +
+          (supplement ? 'Supplement' : ''))], ['className', 'title']);
+
+        hitCount += hits.length;
+
+        for (var hit in hits) {
+
+          createElement('p', $doc, ['innerHTML', hits[hit]], ['className', 'hit']);
+        }
+      }
+
+      createElement('strong', $count, ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten')]);
+    }
+
+    function getJSON(path, callback) {
+
+      var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() :  new ActiveXObject('Microsoft.XMLHTTP');
+
+      httpRequest.onreadystatechange = function() {
+
+        if (httpRequest.readyState === 4 || httpRequest.readyState === 0) {
+
+          if (httpRequest.status === 200) {
+
+            var data = JSON.parse(httpRequest.responseText);
+
+            if (callback) {
+
+              callback(data);
+            }
+          }
+        }
+      };
+
+      httpRequest.open('GET', path);
+      httpRequest.send();
+    }
+
+    function createElement(type, parent) {
+
+      var element = document.createElement(type);
+
+      for (var i = 2; i < arguments.length; i++) {
+
+        // Check if object is an array
+        if (Object.prototype.toString.call(arguments[i]) === '[object Array]') {
+
+          element[arguments[i][0]] = arguments[i][1];
+        }
+      }
+
+      if (parent && isElement(parent)) {
+
+        parent.appendChild(element);
+
+        return element;
+      } else {
+
+        return element;
+      }
+    }
+
+    function emptyElement(element) {
+
+      while (element.hasChildNodes()) {
+
+        element.removeChild(element.lastChild);
+      }
+    }
+
+    function isElement(o){
+
+      return (
+        typeof HTMLElement === 'object' ? o instanceof HTMLElement :
+        o && typeof o === 'object' && o !== null && o.nodeType === 1 && typeof o.nodeName==='string'
+      );
+    }
+
+    function bindEvents() {
+
+      $button.addEventListener('click', search, false);
+      $search.addEventListener('keypress', function (e) {
+
+        var event = e || window.event;
+        var charCode = event.which || event.keyCode;
+
+        if (charCode == '13') {
+
+          search();
+          e.preventDefault();
+
+          return false;
+        }
+      }, false);
+    }
+
+  </script>
+
+</body>
