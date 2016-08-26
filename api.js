@@ -1,9 +1,8 @@
 var express = require('express');
 var router = express.Router();
-
-var port = process.env.PORT || 3005;
-
 var elastic = require('elasticsearch');
+
+var port = process.env.PORT || 3003;
 
 var client = new elastic.Client({
   host: 'localhost:9200'
@@ -15,7 +14,12 @@ var app = express();
 
 router.get('/', function(req, res) {
 
-  res.json({ message: 'Express is running' });
+  res.json({
+
+    name: 'Mammon service',
+    description: 'Elasticsearch client API',
+    version: '0.0.1'
+  });
 });
 
 router.get('/match/:input', function (req, res) {
@@ -138,3 +142,5 @@ app.use(function (req, res, next) {
 app.use('/', router);
 
 app.listen(port);
+
+console.log('Server is running on port ' + port);
