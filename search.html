@@ -56,20 +56,13 @@
       -webkit-box-shadow: 0 0 0px 1000px white inset;
     }
 
-    button span {
-      overflow: hidden;
-      white-space: nowrap;
-      display: block;
-      text-overflow: ellipsis
-    }
-
     #search, #button {
       height: 2em;
       display: inline-block;
     }
 
     #search {
-      width: 85%;
+      width: calc(100% - 115px);
       padding-right: .5em;
       border: 2px solid lightgrey;
       border-radius: 4px;
@@ -80,13 +73,16 @@
     }
 
     #button {
-      width: 14%;
+      width: 110px;
       float: right;
       color: white;
       background: #4185e1;
       border: 2px solid #4185e1;
       border-radius: 4px;
       cursor: pointer;
+      line-height: 1em;
+      text-align: left;
+      padding: 2px 6px 3px 14px;
     }
 
     #button:hover {
@@ -94,8 +90,32 @@
       border-color: #3a77ca;
     }
 
+    #button div {
+      display: inline-block;
+      white-space: nowrap;
+      vertical-align: text-bottom;
+    }
+
+    #button span {
+      margin-right: .2em;
+    }
+
+    #button .loading {
+      display: none;
+    }
+
     .options {
       margin-top: 1em;
+    }
+
+    #results {
+      opacity: 0;
+    }
+
+    #results.visible {
+
+      opacity: 1;
+      transition: opacity .25s ease;
     }
 
     .document {
@@ -158,14 +178,27 @@
       background: #ffff00;
     }
 
-    @media (max-width: 620px) {
+    .loading {
+      border-radius: 50%;
+      width: 19px;
+      height: 19px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: white;
+      animation: spin 1s infinite linear;
+      margin: 0;
+    }
 
-      #search {
-        width: 65%;
+    .error {
+      color: #8B0000;
+    }
+
+    @keyframes spin {
+
+      0% {
+        transform: rotate(0deg);
       }
-
-      #button {
-        width: 34%;
+      100% {
+        transform: rotate(360deg);
       }
     }
   </style>
@@ -181,7 +214,12 @@
     <form>
       <fieldset>
         <input id="search" type="search">
-        <button id="button" type="button"><span>Suchen</span></button>
+        <button id="button" type="button">
+          <div>
+            <span>Suchen</span>
+            <div id="loading" class="loading"></div>
+          </div>
+        </button>
       </fieldset>
 
       <fieldset class="options">
@@ -203,7 +241,10 @@
 
   <script type="text/javascript">
 
-    var search, button;
+    var serviceUrl = 'http://localhost:3003/';
+    // var serviceUrl = 'http://ddj.br.de/mammon-service/';
+
+    var $search, $button, $loading, $results;
 
     document.addEventListener('DOMContentLoaded', init, false);
 
@@ -211,6 +252,7 @@
 
       $search = document.getElementById('search');
       $button = document.getElementById('button');
+      $loading = document.getElementById('loading');
       $results = document.getElementById('results');
 
       bindEvents();
@@ -220,20 +262,33 @@
 
       var query = $search.value;
       var mode = document.querySelector('input[name="mode"]:checked').value;
-      var url = encodeURI('http://localhost:3005/' + mode + '/' + query);
+      var url = encodeURI(serviceUrl + mode + '/' + query);
 
-      getJSON(url, renderResults);
+      $loading.style.display = 'inline-block';
+
+      getJSON(url, function (res, err) {
+
+        if (!err) {
+
+          renderResults(res);
+        } else {
+
+          renderError(err);
+        }
+      });
     }
 
-    function renderResults(results) {
+    function renderResults(res) {
 
-      var docs = results.hits.hits;
+      var docs = res.hits.hits;
       var hitCount = 0;
 
       docs.sort(function (a, b) {
 
         return new Date(b._source.date) - new Date(a._source.date);
       });
+
+      $results.classList.remove('visible');
 
       emptyElement($results);
 
@@ -254,9 +309,9 @@
 
         var $download = createElement('div', $doc, ['className', 'download']);
         createElement('a', $download, ['textContent', 'PDF'], ['className', 'pdf'],
-          ['href', ('../pdf/' + file.replace('.txt', ''))], ['target', '_blank']);
+          ['href', ('./pdf/' + file.replace('.txt', ''))], ['target', '_blank']);
         createElement('a', $download, ['textContent', 'Text'], ['className', 'text'],
-          ['href', ('../text/' + file)], ['target', '_blank']);
+          ['href', ('./text/' + file)], ['target', '_blank']);
 
         var $docHeader = createElement('p', $doc, ['className', 'header']);
         createElement('strong', $docHeader, ['textContent', (date + ' ')], ['className', 'date']);
@@ -271,30 +326,67 @@
         }
       }
 
-      createElement('strong', $count, ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten')]);
+      createElement('strong', $count,
+        ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + res.took + ' ms)')]);
+
+      setTimeout(function () {
+
+        $loading.style.display = 'none';
+        $results.classList.add('visible');
+      }, 750);
     }
 
-    function getJSON(path, callback) {
+    function renderError (err) {
 
-      var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() :  new ActiveXObject('Microsoft.XMLHTTP');
+      $results.classList.remove('visible');
 
-      httpRequest.onreadystatechange = function() {
+      emptyElement($results);
+
+      createElement('strong', $results, ['textContent', err.message], ['className', 'error']);
+
+      setTimeout(function () {
+
+        $loading.style.display = 'none';
+        $results.classList.add('visible');
+      }, 500);
+    }
+
+    function getJSON(url, callback) {
+
+      var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+
+      httpRequest.onreadystatechange = function () {
 
         if (httpRequest.readyState === 4 || httpRequest.readyState === 0) {
 
           if (httpRequest.status === 200) {
 
-            var data = JSON.parse(httpRequest.responseText);
+            try {
 
-            if (callback) {
+              callback(JSON.parse(httpRequest.responseText));
+            } catch (err) {
 
-              callback(data);
+              callback({}, {
+                message: 'Fehler: unerwartete Antwort vom Server'
+              });
             }
+          } else {
+
+            callback({}, {
+              message: 'Fehler: falsche Anfrage oder Ressource nicht verfügbar'
+            });
           }
         }
       };
 
-      httpRequest.open('GET', path);
+      httpRequest.onerror = function (err) {
+
+        callback({}, {
+          message: 'Fehler: keine Antwort vom Server'
+        });
+      };
+
+      httpRequest.open('GET', url);
       httpRequest.send();
     }
 
