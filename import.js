@@ -56,6 +56,6 @@ function saveToElastic(fileName, fileContent) {
 
     if (error) throw error;
 
-    console.log('Inserted document ' + file + ' to ElasticSearch');
+    console.log('Inserted document ' + fileName + ' to ElasticSearch');
   });
 }
