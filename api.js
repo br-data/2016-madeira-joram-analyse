@@ -31,13 +31,15 @@ router.get('/match/:input', function (req, res) {
     size: 1000,
     body: {
       query: {
-        match: {
-          body: query
+        multi_match: {
+          query: query,
+          type: 'phrase',
+          fields: ['body', 'body.folded']
         }
       },
-      highlight : {
-        fields : {
-          body : {}
+      highlight: {
+        fields: {
+          body: {}
         }
       }
     }
@@ -47,7 +49,7 @@ router.get('/match/:input', function (req, res) {
   });
 });
 
-router.get('/wildcard/:input', function (req, res) {
+router.get('/custom/:input', function (req, res) {
 
   var query = req.params.input;
 
@@ -56,38 +58,16 @@ router.get('/wildcard/:input', function (req, res) {
     size: 1000,
     body: {
       query: {
-        wildcard: {
-          body: query
+        simple_query_string: {
+          query: query,
+          fields: ['body','body.folded'],
+          default_operator: 'and',
+          analyze_wildcard: true
         }
       },
-      highlight : {
-        fields : {
-          body : {}
-        }
-      }
-    }
-  }, function (error, result) {
-
-    res.json(result);
-  });
-});
-
-router.get('/regexp/:input', function (req, res) {
-
-  var query = req.params.input;
-
-  client.search({
-    index: index,
-    size: 1000,
-    body: {
-      query: {
-        regexp: {
-          body: query
-        }
-      },
-      highlight : {
-        fields : {
-          body : {}
+      highlight: {
+        fields: {
+          body: {}
         }
       }
     }
@@ -110,9 +90,34 @@ router.get('/fuzzy/:input', function (req, res) {
           body: query
         }
       },
-      highlight : {
-        fields : {
-          body : {}
+      highlight: {
+        fields: {
+          body: {}
+        }
+      }
+    }
+  }, function (error, result) {
+
+    res.json(result);
+  });
+});
+
+router.get('/regexp/:input', function (req, res) {
+
+  var query = req.params.input;
+
+  client.search({
+    index: index,
+    size: 1000,
+    body: {
+      query: {
+        regexp: {
+          body: query
+        }
+      },
+      highlight: {
+        fields: {
+          body: {}
         }
       }
     }

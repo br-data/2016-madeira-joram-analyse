@@ -29,7 +29,7 @@ function loadFiles() {
 function saveToElastic(fileName, fileContent) {
 
   // Get date from filename, if possible
-  var date = fileName.match(/\d{4}-\d{2}-\d{2}/);
+  var date = fileName.match(/\d{4}-\d{1,2}-\d{1,2}/);
   date = date ? new Date(date[0]) : null;
 
   // Get issue number from filename, if possible
@@ -44,7 +44,7 @@ function saveToElastic(fileName, fileContent) {
     index: 'joram',
     type: 'doc',
     body: {
-      name: 'Jornal Oficial da Região Autónoma da Madeira',
+      name: 'JORAM',
       series: 'IV',
       issue: issue,
       supplement: supplement,

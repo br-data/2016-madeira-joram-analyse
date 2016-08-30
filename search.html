@@ -53,7 +53,7 @@
     }
 
     input:-webkit-autofill {
-      -webkit-box-shadow: 0 0 0px 1000px white inset;
+      -webkit-box-shadow: 0 0 0px 1000px #fff inset;
     }
 
     #search, #button {
@@ -64,12 +64,12 @@
     #search {
       width: calc(100% - 115px);
       padding-right: .5em;
-      border: 2px solid lightgrey;
+      border: 2px solid #D3D3D3;
       border-radius: 4px;
     }
 
     #search:focus {
-      border-color: #BFBFBF;
+      border-color: #a9a9a9;
     }
 
     #button {
@@ -121,14 +121,11 @@
     .document {
       margin: 20px 0 40px;
       padding: 10px;
-    }
-
-    .paper {
       position: relative;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     }
 
-    .paper: before, .paper: after {
+    .document: before, .document: after {
       content: "";
       position: absolute;
       z-index: -1;
@@ -142,6 +139,14 @@
 
     .header {
       margin-top: 5px;
+    }
+
+    .header.contract .date {
+      display: none;
+    }
+
+    .header.contract .title {
+      font-weight: bold;
     }
 
     .date, .title, .file {
@@ -201,6 +206,23 @@
         transform: rotate(360deg);
       }
     }
+
+    @media all and (max-width: 360px) {
+
+      #search {
+        width: 100%;
+      }
+
+      #button {
+        width: 100%;
+        margin-top: .5em;
+        text-align: center;
+      }
+
+      #button > div {
+        width: 100%;
+      }
+    }
   </style>
 
 </head>
@@ -213,7 +235,7 @@
 
     <form>
       <fieldset>
-        <input id="search" type="search">
+        <input id="search" type="search" autofocus>
         <button id="button" type="button">
           <div>
             <span>Suchen</span>
@@ -224,14 +246,14 @@
 
       <fieldset class="options">
         <label><strong>Suchoptionen: </strong></label>
-        <input id="match" type="radio" name="mode" value="match" checked>
+        <input type="radio" name="mode" value="match" checked>
         <label for="match">Standard</label>
-        <input id="fuzzy" type="radio" name="mode" value="wildcard">
-        <label for="fuzzy">Wildc?rd*</label>
-        <input id="fuzzy" type="radio" name="mode" value="fuzzy">
-        <label for="fuzzy">Fuzzi</label>
-        <input id="regex" type="radio" name="mode" value="regexp">
-        <label for="regex">/Regex./</label>
+        <input type="radio" name="mode" value="custom">
+        <label for="custom">Custom</label>
+        <input type="radio" name="mode" value="fuzzy">
+        <label for="fuzzy">Fuzzy</label>
+        <input type="radio" name="mode" value="regexp">
+        <label for="regex">Regex</label>
       </fieldset>
     </form>
 
@@ -242,7 +264,7 @@
   <script type="text/javascript">
 
     var serviceUrl = 'http://localhost:3003/';
-    // var serviceUrl = 'http://ddj.br.de/mammon-service/';
+    //var serviceUrl = 'http://ddj.br.de/mammon-service/';
 
     var $search, $button, $loading, $results;
 
@@ -296,6 +318,7 @@
 
       for (var doc in docs) {
 
+        var type = docs[doc]._type;
         var name = docs[doc]._source.name;
         var series = docs[doc]._source.series;
         var issue = docs[doc]._source.issue;
@@ -305,7 +328,7 @@
         var hits = docs[doc].highlight.body;
         var score = docs[doc]._score;
 
-        var $doc = createElement('div', $results, ['className', 'document paper']);
+        var $doc = createElement('div', $results, ['className', 'document']);
 
         var $download = createElement('div', $doc, ['className', 'download']);
         createElement('a', $download, ['textContent', 'PDF'], ['className', 'pdf'],
@@ -313,9 +336,9 @@
         createElement('a', $download, ['textContent', 'Text'], ['className', 'text'],
           ['href', ('./text/' + file)], ['target', '_blank']);
 
-        var $docHeader = createElement('p', $doc, ['className', 'header']);
+        var $docHeader = createElement('p', $doc, ['className', 'header ' + type]);
         createElement('strong', $docHeader, ['textContent', (date + ' ')], ['className', 'date']);
-        createElement('span', $docHeader, ['textContent', ('JORAM' + ' ' + series + ' ' + issue + ' ' +
+        createElement('span', $docHeader, ['textContent', (name + ' ' + series + ' ' + issue + ' ' +
           (supplement ? 'Supplement' : ''))], ['className', 'title']);
 
         hitCount += hits.length;
@@ -361,10 +384,13 @@
 
           if (httpRequest.status === 200) {
 
+
             try {
 
               callback(JSON.parse(httpRequest.responseText));
             } catch (err) {
+
+              console.log(err);
 
               callback({}, {
                 message: 'Fehler: unerwartete Antwort vom Server'

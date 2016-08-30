@@ -62,14 +62,14 @@ function processFiles(files) {
 function extractText(filePath, callback) {
 
   // Extract text from PDF file
-  tika.text(filePath, options, function (error, text) {
+  tika.text(filePath, options, function (error, result) {
 
     if (error) throw error;
 
     var fileName = filePath.substr(filePath.lastIndexOf('/') + 1);
 
     // Save extracted content as text file
-    saveFile(outputFolder + fileName + '.txt', text);
+    saveFile(outputFolder + fileName + '.txt', result);
     callback();
   });
 }
