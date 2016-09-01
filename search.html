@@ -104,8 +104,13 @@
       display: none;
     }
 
-    .options {
-      margin-top: 1em;
+    .mode {
+      margin: 1em 0 .2em;
+    }
+
+    .mode strong, .sorting strong {
+      width: 6.5em;
+      display: inline-block;
     }
 
     #results {
@@ -244,29 +249,38 @@
         </button>
       </fieldset>
 
-      <fieldset class="options">
-        <label><strong>Suchoptionen: </strong></label>
-        <input type="radio" name="mode" value="match" checked>
+      <fieldset class="mode">
+        <label><strong>Suchmodus: </strong></label>
+        <input id="match" type="radio" name="mode" value="match" checked>
         <label for="match">Standard</label>
-        <input type="radio" name="mode" value="custom">
+        <input id="custom" type="radio" name="mode" value="custom">
         <label for="custom">Custom</label>
-        <input type="radio" name="mode" value="fuzzy">
+        <input id="fuzzy" type="radio" name="mode" value="fuzzy">
         <label for="fuzzy">Fuzzy</label>
-        <input type="radio" name="mode" value="regexp">
+        <input id="regex" type="radio" name="mode" value="regexp">
         <label for="regex">Regex</label>
+      </fieldset>
+
+      <fieldset id="sorting" class="sorting">
+        <label><strong>Sortierung: </strong></label>
+        <input id="date" type="radio" name="sorting" value="date" checked>
+        <label for="date">Datum</label>
+        <input id="relevance" type="radio" name="sorting" value="relevance">
+        <label for="relevance">Relevanz</label>
       </fieldset>
     </form>
 
-    <div id="results"></div>
+    <div id="results" class="results"></div>
 
   </main>
 
   <script type="text/javascript">
 
-    var serviceUrl = 'http://localhost:3003/';
-    //var serviceUrl = 'http://ddj.br.de/mammon-service/';
+    // var serviceUrl = 'http://localhost:3003/';
+    var $search, $button, $loading, $results, $sorting;
+    var cachedResults;
 
-    var $search, $button, $loading, $results;
+    var serviceUrl = 'http://ddj.br.de/mammon-service/';
 
     document.addEventListener('DOMContentLoaded', init, false);
 
@@ -275,6 +289,7 @@
       $search = document.getElementById('search');
       $button = document.getElementById('button');
       $loading = document.getElementById('loading');
+      $sorting = document.getElementById('sorting');
       $results = document.getElementById('results');
 
       bindEvents();
@@ -284,31 +299,43 @@
 
       var query = $search.value;
       var mode = document.querySelector('input[name="mode"]:checked').value;
+      var sorting = document.querySelector('input[name="sorting"]:checked').value;
       var url = encodeURI(serviceUrl + mode + '/' + query);
 
       $loading.style.display = 'inline-block';
 
-      getJSON(url, function (res, err) {
+      getJSON(url, function (results, error) {
 
-        if (!err) {
+        if (!error) {
 
-          renderResults(res);
+          renderResults(results, sorting);
         } else {
 
-          renderError(err);
+          renderError(error);
         }
       });
     }
 
-    function renderResults(res) {
+    function renderResults(results, sorting) {
 
-      var docs = res.hits.hits;
+      cachedResults = results;
+
+      var docs = results.hits.hits;
       var hitCount = 0;
 
-      docs.sort(function (a, b) {
+      if (sorting === 'date') {
 
-        return new Date(b._source.date) - new Date(a._source.date);
-      });
+        docs.sort(function (a, b) {
+
+          return new Date(b._source.date) - new Date(a._source.date);
+        });
+      } else if (sorting === 'relevance') {
+
+        docs.sort(function (a, b) {
+
+          return new Date(b._score) - new Date(a._score);
+        });
+      }
 
       $results.classList.remove('visible');
 
@@ -350,7 +377,7 @@
       }
 
       createElement('strong', $count,
-        ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + res.took + ' ms)')]);
+        ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + results.took + ' ms)')]);
 
       setTimeout(function () {
 
@@ -359,13 +386,15 @@
       }, 750);
     }
 
-    function renderError (err) {
+    function renderError(error) {
+
+      cachedResults = undefined;
 
       $results.classList.remove('visible');
 
       emptyElement($results);
 
-      createElement('strong', $results, ['textContent', err.message], ['className', 'error']);
+      createElement('strong', $results, ['textContent', error.message], ['className', 'error']);
 
       setTimeout(function () {
 
@@ -459,19 +488,30 @@
     function bindEvents() {
 
       $button.addEventListener('click', search, false);
-      $search.addEventListener('keypress', function (e) {
+      $search.addEventListener('keypress', handleEnter, false);
+      $sorting.addEventListener('change', handleSorting, false);
+    }
 
-        var event = e || window.event;
-        var charCode = event.which || event.keyCode;
+    function handleEnter(e) {
 
-        if (charCode == '13') {
+      var event = e || window.event;
+      var charCode = event.which || event.keyCode;
 
-          search();
-          e.preventDefault();
+      if (charCode == '13') {
 
-          return false;
-        }
-      }, false);
+        search();
+        e.preventDefault();
+
+        return false;
+      }
+    }
+
+    function handleSorting(e) {
+
+      if (cachedResults) {
+
+        renderResults(cachedResults, e.target.value);
+      }
     }
 
   </script>
