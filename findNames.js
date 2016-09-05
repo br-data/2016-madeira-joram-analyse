@@ -1,10 +1,11 @@
 var fs = require('fs');
 var request = require('request');
 
-var inputFile = './names.txt';
-var outputFile = './names-results.csv';
+var inputFile = './primeiradivision.txt';
+var outputFile = './primeiradivision-results.csv';
 
-var searchUrl = 'http://localhost:3003/custom/';
+var searchUrl = 'http://localhost:3003/match/';
+// var searchUrl = 'http://localhost:3003/custom/';
 
 (function init() {
 
@@ -13,7 +14,12 @@ var searchUrl = 'http://localhost:3003/custom/';
 
 function loadFile(callback) {
 
-  fs.readFile(inputFile, 'utf8', callback);
+  // Empty existing output file
+  fs.truncate(outputFile, 0, function () {
+
+    // Read input file and execute callback
+    fs.readFile(inputFile, 'utf8', callback);
+  });
 }
 
 function processNames(error, result) {
@@ -31,28 +37,27 @@ function processNames(error, result) {
 
       var name = remainingNames.pop();
 
-      if (name !== '') {
+      searchName(name, function (result) {
 
-        searchName(name, function (result) {
+        if (result && result.hits.hits.length) {
 
           var hits = result.hits.hits.length;
-          var line = name + ',' + hits + '\n';
+          var line = name.replace('\n','') + ',' + hits + '\n';
 
           console.log('Found ' + hits + ' entries for ' + name);
 
           fs.appendFile(outputFile, line, function (error) {
 
             if (error) { throw error; }
-
-            iterate(remainingNames);
           });
-        });
-      } else {
 
-        iterate(remainingNames);
-      }
+          iterate(remainingNames);
+        } else {
+
+          iterate(remainingNames);
+        }
+      });
     } else {
-
       console.log('Finished processing ' + count + ' names');
     }
   }
@@ -71,6 +76,9 @@ function searchName(name, callback) {
     if (!error && response.statusCode === 200) {
 
       callback(body);
+    } else {
+
+      callback(undefined);
     }
   });
 }
