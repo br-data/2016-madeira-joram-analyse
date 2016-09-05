@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1">
+
+  <title>Mammon Suche</title>
+
+  <script type="text/javascript" src="js/search.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+
+</head>
+
+<body>
+
+  <main class="main">
+
+    <h1>Mammon Suche</h1>
+
+    <form>
+      <fieldset>
+        <input id="search" type="search" autofocus>
+        <button id="button" type="button">
+          <div>
+            <span>Suchen</span>
+            <div id="loading" class="loading"></div>
+          </div>
+        </button>
+      </fieldset>
+
+      <fieldset class="mode">
+        <label><strong>Suchmodus: </strong></label>
+        <input id="match" type="radio" name="mode" value="match" checked>
+        <label for="match">Standard</label>
+        <input id="custom" type="radio" name="mode" value="custom">
+        <label for="custom">Custom</label>
+        <input id="fuzzy" type="radio" name="mode" value="fuzzy">
+        <label for="fuzzy">Fuzzy</label>
+        <input id="regex" type="radio" name="mode" value="regexp">
+        <label for="regex">Regex</label>
+      </fieldset>
+
+      <fieldset id="sorting" class="sorting">
+        <label><strong>Sortierung: </strong></label>
+        <input id="date" type="radio" name="sorting" value="date" checked>
+        <label for="date">Datum</label>
+        <input id="relevance" type="radio" name="sorting" value="relevance">
+        <label for="relevance">Relevanz</label>
+      </fieldset>
+    </form>
+
+    <div id="results" class="results"></div>
+
+  </main>
+
+</body>
