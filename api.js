@@ -1,17 +1,21 @@
+// Rest interface for simple Elasticsearch queries
 var express = require('express');
 var router = express.Router();
 var elastic = require('elasticsearch');
 
 var port = process.env.PORT || 3003;
 
+// ESC cluster address
 var client = new elastic.Client({
   host: 'localhost:9200'
 });
 
+// ESC index name
 var index = 'joram';
 
 var app = express();
 
+// Standard route
 router.get('/', function(req, res) {
 
   res.json({
@@ -22,9 +26,12 @@ router.get('/', function(req, res) {
   });
 });
 
-router.get('/match/:input', function (req, res) {
+// Search route /match
+// Full text search, finds only exact matches "John Doe"
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+router.get('/match/:query', function (req, res) {
 
-  var query = req.params.input;
+  var query = req.params.query;
 
   client.search({
     index: index,
@@ -39,7 +46,8 @@ router.get('/match/:input', function (req, res) {
       },
       highlight: {
         fields: {
-          body: {}
+          body: {},
+          'body.folded': {}
         }
       }
     }
@@ -49,9 +57,13 @@ router.get('/match/:input', function (req, res) {
   });
 });
 
-router.get('/custom/:input', function (req, res) {
+// Search route /custom
+// Full text search, finds all terms of a query: "John" AND "Doe"
+// Supports wildcards and simple search operators
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html
+router.get('/custom/:query', function (req, res) {
 
-  var query = req.params.input;
+  var query = req.params.query;
 
   client.search({
     index: index,
@@ -67,7 +79,8 @@ router.get('/custom/:input', function (req, res) {
       },
       highlight: {
         fields: {
-          body: {}
+          body: {},
+          'body.folded': {}
         }
       }
     }
@@ -77,9 +90,12 @@ router.get('/custom/:input', function (req, res) {
   });
 });
 
-router.get('/fuzzy/:input', function (req, res) {
+// Search route /fuzzy
+// Fuzzy term search, finds all terms of a query: "Jhon"
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html
+router.get('/fuzzy/:query', function (req, res) {
 
-  var query = req.params.input;
+  var query = req.params.query;
 
   client.search({
     index: index,
@@ -102,9 +118,12 @@ router.get('/fuzzy/:input', function (req, res) {
   });
 });
 
-router.get('/regexp/:input', function (req, res) {
+// Search route /regexp
+// Fuzzy term search, finds all terms of a query: "J.h*"
+// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
+router.get('/regexp/:query', function (req, res) {
 
-  var query = req.params.input;
+  var query = req.params.query;
 
   client.search({
     index: index,
@@ -134,7 +153,7 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
 
-  // intercept OPTIONS method
+  // Intercept OPTIONS method
   if ('OPTIONS' == req.method) {
 
     res.send(200);
