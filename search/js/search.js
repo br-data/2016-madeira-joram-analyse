@@ -1,8 +1,8 @@
 var $search, $button, $loading, $results, $sorting;
 var cachedResults;
 
-// var searchUrl = 'http://localhost:3003/';
-var searchUrl = 'http://ddj.br.de/mammon-service/';
+var searchUrl = 'http://localhost:3003';
+// var searchUrl = 'http://ddj.br.de/mammon-service';
 
 document.addEventListener('DOMContentLoaded', init, false);
 
@@ -15,13 +15,24 @@ function init() {
   $results = document.getElementById('results');
 
   bindEvents();
+  handleLocationChange();
 }
 
-function search() {
+function search(query, sorting, mode) {
 
-  var query = $search.value;
-  var mode = document.querySelector('input[name="mode"]:checked').value;
-  var url = encodeURI(searchUrl + mode + '/' + query);
+  var url, queryString;
+
+  query = query || encodeURIComponent($search.value);
+  sorting = sorting || encodeURIComponent(document.querySelector('input[name="sorting"]:checked').value);
+  mode = mode || encodeURIComponent(document.querySelector('input[name="mode"]:checked').value);
+  url = encodeURI(searchUrl + '/' + mode + '/' + query);
+
+  queryString = '?m=' + mode + '&s=' + sorting + '&q=' + query;
+
+  if (window.history) {
+
+    window.history.pushState('', '', queryString);
+  }
 
   $loading.style.display = 'inline-block';
 
@@ -137,6 +148,68 @@ function showResults() {
   }, 750);
 }
 
+function bindEvents() {
+
+  window.addEventListener('popstate', handleLocationChange, false);
+
+  $button.addEventListener('click', handleSearch, false);
+  $search.addEventListener('keypress', handleEnter, false);
+  $sorting.addEventListener('change', handleSorting, false);
+}
+
+function handleLocationChange() {
+
+  var query, sorting, mode;
+
+  if (getQueryParameter('q')) {
+
+    query = decodeURIComponent(getQueryParameter('q'));
+    sorting = decodeURIComponent(getQueryParameter('s')) || 'date';
+    mode = decodeURIComponent(getQueryParameter('m')) || 'match';
+
+    $search.value = query;
+    document.querySelector('input[name=' + sorting + ']:checked');
+    document.querySelector('input[name=' + mode + ']:checked');
+
+    console.log('Force search');
+    search(query, sorting, mode);
+  }
+}
+
+function handleSearch() {
+
+  search();
+}
+
+function handleEnter(e) {
+
+  var event = e || window.event;
+  var charCode = event.which || event.keyCode;
+
+  if (charCode == '13') {
+
+    search();
+    e.preventDefault();
+
+    return false;
+  }
+}
+
+function handleSorting(e) {
+
+  if (cachedResults) {
+
+    renderResults(cachedResults, e.target.value);
+  }
+}
+
+function getQueryParameter(name) {
+
+  var param = location.search.match(new RegExp(name + '=(.+?)(&|$)'));
+
+  return param ? decodeURI(param[1]) : false;
+}
+
 function getJSON(url, callback) {
 
   var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
@@ -218,33 +291,4 @@ function isElement(o){
     typeof HTMLElement === 'object' ? o instanceof HTMLElement :
     o && typeof o === 'object' && o !== null && o.nodeType === 1 && typeof o.nodeName==='string'
   );
-}
-
-function bindEvents() {
-
-  $button.addEventListener('click', search, false);
-  $search.addEventListener('keypress', handleEnter, false);
-  $sorting.addEventListener('change', handleSorting, false);
-}
-
-function handleEnter(e) {
-
-  var event = e || window.event;
-  var charCode = event.which || event.keyCode;
-
-  if (charCode == '13') {
-
-    search();
-    e.preventDefault();
-
-    return false;
-  }
-}
-
-function handleSorting(e) {
-
-  if (cachedResults) {
-
-    renderResults(cachedResults, e.target.value);
-  }
 }
