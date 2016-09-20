@@ -1,11 +1,16 @@
+// Use a list of names to search the database and save results to another file
 var fs = require('fs');
 var request = require('request');
 
-var inputFile = './primeiradivision.txt';
-var outputFile = './primeiradivision-results.csv';
+// Use command line arguments or predefined paths
+var inputFile = process.argv[2] || './names.txt';
+var outputFile = process.argv[3] || './names-results.txt';
 
-var searchUrl = 'http://localhost:3003/match/';
-// var searchUrl = 'http://localhost:3003/custom/';
+// Returns exact matches only "John Doe"
+var searchUrl = 'http://ddj.br.de/mammon-service/match/';
+
+// Matches all terms of a query "John" AND "Doe"
+// var searchUrl = 'http://ddj.br.de/mammon-service/custom/';
 
 (function init() {
 
@@ -26,6 +31,7 @@ function processNames(error, result) {
 
   if (error) { throw error; }
 
+  // Names are sepeated by line breaks
   var names = result.toString().split('\n');
   var count = names.length;
 
@@ -33,19 +39,22 @@ function processNames(error, result) {
 
   function iterate(remainingNames) {
 
+    // Keep searching until the last name
     if (names.length > 0) {
 
       var name = remainingNames.pop();
 
       searchName(name, function (result) {
 
+        // Only handle responses with at least one match
         if (result && result.hits.hits.length) {
 
           var hits = result.hits.hits.length;
-          var line = name.replace('\n','') + ',' + hits + '\n';
+          var line = name.replace('\n','') + ',' + hits + '\n'; // CSV syntax
 
           console.log('Found ' + hits + ' entries for ' + name);
 
+          // Write result to output file
           fs.appendFile(outputFile, line, function (error) {
 
             if (error) { throw error; }
@@ -58,11 +67,13 @@ function processNames(error, result) {
         }
       });
     } else {
+
       console.log('Finished processing ' + count + ' names');
     }
   }
 }
 
+// Query the search API and pass response to callback
 function searchName(name, callback) {
 
   var url = encodeURI(searchUrl + name);
@@ -78,6 +89,7 @@ function searchName(name, callback) {
       callback(body);
     } else {
 
+      // Ignore errors
       callback(undefined);
     }
   });

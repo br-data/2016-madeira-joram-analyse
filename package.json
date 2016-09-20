@@ -1,10 +1,19 @@
 {
-  "name": "madeira",
+  "name": "mammon-analyse",
+  "description": "Tools for analysing and searching documents",
+  "author": "Steffen Kühne",
   "version": "0.0.1",
+  "license": "properietary",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:digitalegarage/einzelhandel-analyse.git"
+  },
   "dependencies": {
     "elasticsearch": "^11.0.1",
     "express": "^4.14.0",
     "node-dir": "^0.1.15",
+    "request": "^2.74.0",
     "simplecrawler": "^1.0.0",
     "tika": "git@github.com:ICIJ/node-tika.git#master"
   }

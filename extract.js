@@ -1,3 +1,4 @@
+// Extract text from PDF files, using OCR if necessary
 var fs = require('fs');
 var path = require('path');
 var dir = require('node-dir');

@@ -1,3 +1,4 @@
+// Search a website for files (PDFs) and download them
 var fs = require('fs');
 var url = require('url');
 var path = require('path');

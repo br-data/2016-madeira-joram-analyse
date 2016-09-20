@@ -4,10 +4,9 @@ var elastic = require('elasticsearch');
 
 // Configuration
 var dirName = './text/';
-var client = new elastic.Client({
-
-  host: 'localhost:9200'
-});
+var client = new elastic.Client({ host: 'localhost:9200' });
+var index = 'joram';
+var type = 'doc';
 
 (function init() {
 
@@ -41,8 +40,8 @@ function saveToElastic(fileName, fileContent) {
   supplement = supplement ? true : false;
 
   client.create({
-    index: 'joram',
-    type: 'doc',
+    index: index,
+    type: type,
     body: {
       name: 'JORAM',
       series: 'IV',

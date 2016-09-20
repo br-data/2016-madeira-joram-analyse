@@ -15,7 +15,6 @@ var type = 'doc';
     .then(putSettings, handleError)
     .then(putMapping, handleError)
     .then(openIndex, handleError);
-
 })();
 
 function deleteIndex() {
