@@ -16,8 +16,8 @@ body {
 
 header {
   background: #fff;
-  padding: 1em 0 2em;
-  margin-bottom: 2em;
+  padding: 2em 0 3em;
+  margin-bottom: 3em;
   box-shadow: 0 1px 4px rgba(0, 0, 0, .3)
 }
 
@@ -106,9 +106,18 @@ input:-webkit-autofill {
   margin: 1em 0 .2em;
 }
 
-.mode strong, .sorting strong {
+.options > div {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.options strong {
   width: 6.5em;
   display: inline-block;
+}
+
+.options label {
+  margin-right: .5em;
 }
 
 #results {

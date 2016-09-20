@@ -1,299 +1,299 @@
-var $search, $button, $loading, $results, $sorting;
+var mammon = (function () {
 
-var state = {
-  query: undefined,
-  sorting: undefined,
-  mode: undefined,
-  results: undefined
-};
+  // var searchUrl = 'http://localhost:3003';
+  var searchUrl = 'http://ddj.br.de/mammon-service';
+  var $search, $button, $loading, $results, $sorting;
+  var state = {
+    query: undefined,
+    sorting: undefined,
+    mode: undefined,
+    results: undefined
+  };
 
-// var searchUrl = 'http://localhost:3003';
-var searchUrl = 'http://ddj.br.de/mammon-service';
+  document.addEventListener('DOMContentLoaded', init, false);
 
-document.addEventListener('DOMContentLoaded', init, false);
+  function init() {
 
-function init() {
+    $search = document.getElementById('search');
+    $button = document.getElementById('button');
+    $loading = document.getElementById('loading');
+    $sorting = document.getElementById('sorting');
+    $results = document.getElementById('results');
 
-  $search = document.getElementById('search');
-  $button = document.getElementById('button');
-  $loading = document.getElementById('loading');
-  $sorting = document.getElementById('sorting');
-  $results = document.getElementById('results');
-
-  bindEvents();
-  handleLocationChange();
-}
-
-function search(query, sorting, mode) {
-
-  var url, queryString;
-
-  query = query || encodeURIComponent($search.value);
-  sorting = sorting || encodeURIComponent(document.querySelector('input[name="sorting"]:checked').value);
-  mode = mode || encodeURIComponent(document.querySelector('input[name="mode"]:checked').value);
-  url = encodeURI(searchUrl + '/' + mode + '/' + query);
-
-  queryString = '?m=' + mode + '&s=' + sorting + '&q=' + query;
-
-  if (window.history) {
-
-    window.history.pushState('', '', queryString);
+    bindEvents();
+    handleLocationChange();
   }
 
-  $loading.style.display = 'inline-block';
+  function search(query, sorting, mode) {
 
-  getJSON(url, function (results, error) {
+    var urlString, queryString;
 
-    if (!error) {
+    state.query = query || encodeURIComponent($search.value);
+    state.sorting = sorting || encodeURIComponent(document.querySelector('input[name="sorting"]:checked').value);
+    state.mode = mode || encodeURIComponent(document.querySelector('input[name="mode"]:checked').value);
 
-      renderResults(results);
-    } else {
+    urlString = encodeURI(searchUrl + '/' + state.mode + '/' + state.query);
+    queryString = '?m=' + state.mode + '&s=' + state.sorting + '&q=' + state.query;
 
-      renderError(error);
+    if (window.history) {
+
+      window.history.pushState('', '', queryString);
     }
-  });
-}
 
-function sortResults(docs) {
+    $loading.style.display = 'inline-block';
 
-  var sorting = document.querySelector('input[name="sorting"]:checked').value;
+    getJSON(urlString, function (results, error) {
 
-  if (sorting === 'date') {
+      if (!error) {
 
-    return docs.sort(function (a, b) {
-
-      return new Date(b._source.date) - new Date(a._source.date);
-    });
-  } else if (sorting === 'relevance') {
-
-    return docs.sort(function (a, b) {
-
-      return new Date(b._score) - new Date(a._score);
-    });
-  }
-}
-
-function renderResults(results) {
-
-  var docs, hitCount, $count;
-
-  state.results = results;
-  docs = results.hits.hits;
-  docs = sortResults(docs);
-  hitCount = 0;
-
-  clearResults();
-
-  $count = createElement('div', $results, ['className', 'count']);
-
-  for (var doc in docs) {
-
-    var type = docs[doc]._type;
-    var name = docs[doc]._source.name;
-    var series = docs[doc]._source.series;
-    var issue = docs[doc]._source.issue;
-    var supplement = docs[doc]._source.issue;
-    var date = new Date(docs[doc]._source.date).toLocaleDateString();
-    var file = docs[doc]._source.file;
-    var hits = docs[doc].highlight.body || docs[doc].highlight['body.folded'];
-
-    var $doc = createElement('div', $results, ['className', 'document']);
-
-    var $download = createElement('div', $doc, ['className', 'download']);
-    createElement('a', $download, ['textContent', 'PDF'], ['className', 'pdf'],
-      ['href', ('../pdf/' + file.replace('.txt', ''))], ['target', '_blank']);
-    createElement('a', $download, ['textContent', 'Text'], ['className', 'text'],
-      ['href', ('../text/' + file)], ['target', '_blank']);
-
-    var $docHeader = createElement('p', $doc, ['className', 'header ' + type]);
-    createElement('strong', $docHeader, ['textContent', (date + ' ')], ['className', 'date']);
-    createElement('span', $docHeader, ['textContent', (name + ' ' + series + ' ' + issue + ' ' +
-      (supplement ? 'Supplement' : ''))], ['className', 'title']);
-
-    hitCount += hits.length;
-
-    for (var hit in hits) {
-
-      createElement('p', $doc, ['innerHTML', hits[hit]], ['className', 'hit']);
-    }
-  }
-
-  createElement('p', $count,
-    ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + results.took + ' ms)')]);
-
-  if (docs.length === 1000) {
-
-    createElement('p', $count,
-      ['textContent', ' Es werden nicht alle Suchergebnisse angezeigt']);
-  }
-
-  showResults();
-}
-
-function renderError(error) {
-
-  cachedResults = undefined;
-
-  clearResults();
-  createElement('strong', $results, ['textContent', error.message], ['className', 'error']);
-  showResults();
-}
-
-function clearResults() {
-
-  $results.classList.remove('visible');
-  emptyElement($results);
-}
-
-function showResults() {
-
-  setTimeout(function () {
-
-    $loading.style.display = 'none';
-    $results.classList.add('visible');
-  }, 750);
-}
-
-function bindEvents() {
-
-  window.addEventListener('popstate', handleLocationChange, false);
-
-  $button.addEventListener('click', handleSearch, false);
-  $search.addEventListener('keypress', handleEnter, false);
-  $sorting.addEventListener('change', handleSorting, false);
-}
-
-function handleLocationChange() {
-
-  var query, sorting, mode;
-
-  if (getQueryParameter('q')) {
-
-    query = decodeURIComponent(getQueryParameter('q'));
-    sorting = decodeURIComponent(getQueryParameter('s')) || 'date';
-    mode = decodeURIComponent(getQueryParameter('m')) || 'match';
-
-    $search.value = query;
-    document.querySelector('input[name=' + sorting + ']:checked');
-    document.querySelector('input[name=' + mode + ']:checked');
-
-    search(query, sorting, mode);
-  }
-}
-
-function handleSearch() {
-
-  search();
-}
-
-function handleEnter(e) {
-
-  var event = e || window.event;
-  var charCode = event.which || event.keyCode;
-
-  if (charCode == '13') {
-
-    search();
-    e.preventDefault();
-
-    return false;
-  }
-}
-
-function handleSorting(e) {
-
-  if (state.results) {
-
-    renderResults(state.results, e.target.value);
-  }
-}
-
-function getQueryParameter(name) {
-
-  var param = location.search.match(new RegExp(name + '=(.+?)(&|$)'));
-
-  return param ? decodeURI(param[1]) : false;
-}
-
-function getJSON(url, callback) {
-
-  var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-
-  httpRequest.onreadystatechange = function () {
-
-    if (httpRequest.readyState === 4 || httpRequest.readyState === 0) {
-
-      if (httpRequest.status === 200) {
-
-        try {
-
-          callback(JSON.parse(httpRequest.responseText));
-        } catch (error) {
-
-          console.error(error);
-
-          callback({}, {
-            message: 'Fehler: unerwartete Antwort vom Server'
-          });
-        }
+        state.results = results;
+        renderResults(results);
       } else {
 
-        callback({}, {
-          message: 'Fehler: falsche Anfrage oder Ressource nicht verfügbar'
-        });
+        state.results = undefined;
+        renderError(error);
+      }
+    });
+  }
+
+  function sortResults(docs) {
+
+    state.sorting = document.querySelector('input[name="sorting"]:checked').value;
+
+    if (state.sorting === 'date') {
+
+      return docs.sort(function (a, b) {
+
+        return new Date(b._source.date) - new Date(a._source.date);
+      });
+    } else if (state.sorting === 'relevance') {
+
+      return docs.sort(function (a, b) {
+
+        return new Date(b._score) - new Date(a._score);
+      });
+    }
+  }
+
+  function renderResults(results) {
+
+    var docs = sortResults(results.hits.hits);
+    var hitCount = 0;
+
+    clearResults();
+
+    var $count = createElement('div', $results, ['className', 'count']);
+
+    for (var doc in docs) {
+
+      var type = docs[doc]._type;
+      var name = docs[doc]._source.name;
+      var series = docs[doc]._source.series;
+      var issue = docs[doc]._source.issue;
+      var supplement = docs[doc]._source.issue;
+      var date = new Date(docs[doc]._source.date).toLocaleDateString();
+      var file = docs[doc]._source.file;
+      var hits = docs[doc].highlight.body || docs[doc].highlight['body.folded'];
+
+      var $docWrapper = createElement('div', $results, ['className', 'document']);
+
+      var $download = createElement('div', $docWrapper, ['className', 'download']);
+      createElement('a', $download, ['textContent', 'PDF'], ['className', 'pdf'],
+        ['href', ('./pdf/' + file.replace('.txt', ''))], ['target', '_blank']);
+      createElement('a', $download, ['textContent', 'Text'], ['className', 'text'],
+        ['href', ('./text/' + file)], ['target', '_blank']);
+
+      var $docHeader = createElement('div', $docWrapper, ['className', 'header ' + type]);
+      createElement('strong', $docHeader, ['textContent', (date + ' ')], ['className', 'date']);
+      createElement('span', $docHeader, ['textContent', (name + ' ' + series + ' ' + issue + ' ' +
+        (supplement ? 'Supplement' : ''))], ['className', 'title']);
+
+      hitCount += hits.length;
+
+      for (var hit in hits) {
+
+        createElement('p', $docWrapper, ['innerHTML', hits[hit]], ['className', 'hit']);
       }
     }
-  };
 
-  httpRequest.onerror = function (error) {
+    createElement('p', $count,
+      ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + results.took + ' ms)')]);
 
-    console.error(error);
+    if (docs.length === 1000) {
 
-    callback({}, {
-      message: 'Fehler: keine Antwort vom Server'
-    });
-  };
+      createElement('p', $count,
+        ['textContent', ' Es werden nicht alle Suchergebnisse angezeigt']);
+    }
 
-  httpRequest.open('GET', url);
-  httpRequest.send();
-}
+    showResults();
+  }
 
-function createElement(type, parent) {
+  function renderError(error) {
 
-  var element = document.createElement(type);
+    clearResults();
+    createElement('strong', $results, ['textContent', error.message], ['className', 'error']);
+    showResults();
+  }
 
-  for (var i = 2; i < arguments.length; i++) {
+  function clearResults() {
 
-    // Check if object is an array
-    if (Object.prototype.toString.call(arguments[i]) === '[object Array]') {
+    $results.classList.remove('visible');
+    emptyElement($results);
+  }
 
-      element[arguments[i][0]] = arguments[i][1];
+  function showResults() {
+
+    setTimeout(function () {
+
+      $loading.style.display = 'none';
+      $results.classList.add('visible');
+    }, 750);
+  }
+
+  function bindEvents() {
+
+    window.addEventListener('popstate', handleLocationChange, false);
+
+    $button.addEventListener('click', handleSearch, false);
+    $search.addEventListener('keypress', handleEnter, false);
+    $sorting.addEventListener('change', handleSorting, false);
+  }
+
+  function handleLocationChange() {
+
+    if (getQueryParameter('q')) {
+
+      state.query = decodeURIComponent(getQueryParameter('q'));
+      state.sorting = decodeURIComponent(getQueryParameter('s')) || 'date';
+      state.mode = decodeURIComponent(getQueryParameter('m')) || 'match';
+
+      $search.value = state.query;
+      document.querySelector('input[name=' + state.sorting + ']:checked');
+      document.querySelector('input[name=' + state.mode + ']:checked');
+
+      search(state.query, state.sorting, state.mode);
     }
   }
 
-  if (parent && isElement(parent)) {
+  function handleSearch() {
 
-    parent.appendChild(element);
-
-    return element;
-  } else {
-
-    return element;
+    search();
   }
-}
 
-function emptyElement(element) {
+  function handleEnter(e) {
 
-  while (element.hasChildNodes()) {
+    var event = e || window.event;
+    var charCode = event.which || event.keyCode;
 
-    element.removeChild(element.lastChild);
+    if (charCode == '13') {
+
+      search();
+      e.preventDefault();
+
+      return false;
+    }
   }
-}
 
-function isElement(o){
+  function handleSorting(e) {
 
-  return (
-    typeof HTMLElement === 'object' ? o instanceof HTMLElement :
-    o && typeof o === 'object' && o !== null && o.nodeType === 1 && typeof o.nodeName==='string'
-  );
-}
+    if (state.results) {
+
+      renderResults(state.results, e.target.value);
+    }
+  }
+
+  function getQueryParameter(name) {
+
+    var param = location.search.match(new RegExp(name + '=(.+?)(&|$)'));
+
+    return param ? decodeURI(param[1]) : false;
+  }
+
+  function getJSON(url, callback) {
+
+    var httpRequest = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+
+    httpRequest.onreadystatechange = function () {
+
+      if (httpRequest.readyState === 4 || httpRequest.readyState === 0) {
+
+        if (httpRequest.status === 200) {
+
+          try {
+
+            callback(JSON.parse(httpRequest.responseText));
+          } catch (error) {
+
+            console.error(error);
+
+            callback({}, {
+              message: 'Fehler: unerwartete Antwort vom Server'
+            });
+          }
+        } else {
+
+          callback({}, {
+            message: 'Fehler: falsche Anfrage oder Ressource nicht verfügbar'
+          });
+        }
+      }
+    };
+
+    httpRequest.onerror = function (error) {
+
+      console.error(error);
+
+      callback({}, {
+        message: 'Fehler: keine Antwort vom Server'
+      });
+    };
+
+    httpRequest.open('GET', url);
+    httpRequest.send();
+  }
+
+  function createElement(type, parent) {
+
+    var element = document.createElement(type);
+
+    for (var i = 2; i < arguments.length; i++) {
+
+      // Check if object is an array
+      if (Object.prototype.toString.call(arguments[i]) === '[object Array]') {
+
+        element[arguments[i][0]] = arguments[i][1];
+      }
+    }
+
+    if (parent && isElement(parent)) {
+
+      parent.appendChild(element);
+
+      return element;
+    } else {
+
+      return element;
+    }
+  }
+
+  function emptyElement(element) {
+
+    while (element.hasChildNodes()) {
+
+      element.removeChild(element.lastChild);
+    }
+  }
+
+  function isElement(o){
+
+    return (
+      typeof HTMLElement === 'object' ? o instanceof HTMLElement :
+      o && typeof o === 'object' && o !== null && o.nodeType === 1 && typeof o.nodeName==='string'
+    );
+  }
+
+  return {
+    init: init,
+    search: search
+  };
+})();
