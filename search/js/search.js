@@ -1,8 +1,14 @@
 var $search, $button, $loading, $results, $sorting;
-var cachedResults;
 
-var searchUrl = 'http://localhost:3003';
-// var searchUrl = 'http://ddj.br.de/mammon-service';
+var state = {
+  query: undefined,
+  sorting: undefined,
+  mode: undefined,
+  results: undefined
+};
+
+// var searchUrl = 'http://localhost:3003';
+var searchUrl = 'http://ddj.br.de/mammon-service';
 
 document.addEventListener('DOMContentLoaded', init, false);
 
@@ -71,7 +77,7 @@ function renderResults(results) {
 
   var docs, hitCount, $count;
 
-  cachedResults = results;
+  state.results = results;
   docs = results.hits.hits;
   docs = sortResults(docs);
   hitCount = 0;
@@ -171,7 +177,6 @@ function handleLocationChange() {
     document.querySelector('input[name=' + sorting + ']:checked');
     document.querySelector('input[name=' + mode + ']:checked');
 
-    console.log('Force search');
     search(query, sorting, mode);
   }
 }
@@ -197,9 +202,9 @@ function handleEnter(e) {
 
 function handleSorting(e) {
 
-  if (cachedResults) {
+  if (state.results) {
 
-    renderResults(cachedResults, e.target.value);
+    renderResults(state.results, e.target.value);
   }
 }
 

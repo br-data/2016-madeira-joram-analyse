@@ -7,6 +7,8 @@
 
   <title>Mammon Suche</title>
 
+  <link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAB8UlEQVRIS7XVS6hNcRTH8c/1KGSCARIDUkrERMljYiAUwkwSKRMyQAYIAyLMZSAZSEkIEzOvMJA8rmSglJQJ8oyQlta97bvPPvvswbmrdvuc/r//+q7Hf/13j0G2nob+RyCez/jbcM9/WR1gJrZhOaak0594hPM4gx+dYFWA4TiGHRhS4+ANNuBOHaQMGIZLWFnY9A738QVTMR8RRNgvrMGNdpAy4Cj2pPgDtuNCqe4TcRzrUxfgOXhdBSkCpuElIouPWIgXNemfwM5cj6zXdQJEVLtStAlnOzRwKB5jVmY4GVHOAVbM4AlmI0ozHr87nRBsxanUbcS5OsB3jMRNLG3gPCQRUAQWdhj76gARcaR9FasbAqbjVWpPFkrcv71YoreYlI2NIWtiK3A9hbsRjW/bg4uFkxCpP2tAiJrHsIXFqbtXB1iFKym4hSX4UwNZgNs57TEDUa6We6pYovj9APPSaWS0GV8rIItwGeNyLZobTW6x8iRHFAEZm8o416cz0pjYGMYYqLWlizKCWIa7dSXqW5uLa9nwBm3ol1RC2l3XY3AQWzCqgtKLAznF8e6zFkinD85oLMaMBL3HQzwtOI1A2kI6AZqWqAoS1/rzbgEikDJkL450ExCQ/TiET4ij3NttQEAm5NfvW/wZDMCAvv0DZEFgGQvWNqMAAAAASUVORK5CYII=" rel="icon" type="image/x-icon">
+
   <script type="text/javascript" src="js/search.js"></script>
   <link rel="stylesheet" type="text/css" href="css/style.css">
 
@@ -14,44 +16,48 @@
 
 <body>
 
-  <main class="main">
+  <header>
 
-    <h1>Mammon Suche</h1>
+    <section class="center">
 
-    <form>
-      <fieldset>
-        <input id="search" type="search" autofocus>
-        <button id="button" type="button">
-          <div>
-            <span>Suchen</span>
-            <div id="loading" class="loading"></div>
-          </div>
-        </button>
-      </fieldset>
+      <h1>Mammon Suche</h1>
 
-      <fieldset class="mode">
-        <label><strong>Suchmodus: </strong></label>
-        <input id="match" type="radio" name="mode" value="match" checked>
-        <label for="match">Standard</label>
-        <input id="custom" type="radio" name="mode" value="custom">
-        <label for="custom">Custom</label>
-        <input id="fuzzy" type="radio" name="mode" value="fuzzy">
-        <label for="fuzzy">Fuzzy</label>
-        <input id="regex" type="radio" name="mode" value="regexp">
-        <label for="regex">Regex</label>
-      </fieldset>
+      <form>
+        <fieldset>
+          <input id="search" type="search" autofocus>
+          <button id="button" type="button">
+            <div>
+              <span>Suchen</span>
+              <div id="loading" class="loading"></div>
+            </div>
+          </button>
+        </fieldset>
 
-      <fieldset id="sorting" class="sorting">
-        <label><strong>Sortierung: </strong></label>
-        <input id="date" type="radio" name="sorting" value="date" checked>
-        <label for="date">Datum</label>
-        <input id="relevance" type="radio" name="sorting" value="relevance">
-        <label for="relevance">Relevanz</label>
-      </fieldset>
-    </form>
+        <fieldset class="mode">
+          <label><strong>Suchmodus: </strong></label>
+          <input id="match" type="radio" name="mode" value="match" checked>
+          <label for="match">Standard</label>
+          <input id="custom" type="radio" name="mode" value="custom">
+          <label for="custom">Custom</label>
+          <input id="fuzzy" type="radio" name="mode" value="fuzzy">
+          <label for="fuzzy">Fuzzy</label>
+          <input id="regex" type="radio" name="mode" value="regexp">
+          <label for="regex">Regex</label>
+        </fieldset>
 
-    <div id="results" class="results"></div>
+        <fieldset id="sorting" class="sorting">
+          <label><strong>Sortierung: </strong></label>
+          <input id="date" type="radio" name="sorting" value="date" checked>
+          <label for="date">Datum</label>
+          <input id="relevance" type="radio" name="sorting" value="relevance">
+          <label for="relevance">Relevanz</label>
+        </fieldset>
+      </form>
 
-  </main>
+    </section>
+
+  </header>
+
+  <section id="results" class="results center"></section>
 
 </body>

@@ -10,17 +10,26 @@ html {
 
 body {
   font-family: Helvetica, Arial, sans-serif;
-  margin: 2em;
+  margin: 0;
+  background: #f0f0f4;
 }
 
-.main {
+header {
+  background: #fff;
+  padding: 1em 0 2em;
+  margin-bottom: 2em;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3)
+}
+
+header h1 {
+  margin-top: 0;
+}
+
+.center {
   width: 100%;
   max-width: 840px;
   margin: 0 auto;
-}
-
-form {
-  margin-bottom: 50px;
+  padding: 0 2em;
 }
 
 fieldset {
@@ -33,10 +42,6 @@ fieldset {
 input, button, label {
   font-size: 1em;
   line-height: 1em;
-}
-
-legend {
-  display: inline-block;
 }
 
 input:focus,
@@ -56,13 +61,13 @@ input:-webkit-autofill {
 
 #search {
   width: calc(100% - 115px);
-  padding-right: .5em;
-  border: 2px solid #D3D3D3;
+  padding: 0 .5em;
+  border: 2px solid #ccd;
   border-radius: 4px;
 }
 
 #search:focus {
-  border-color: #a9a9a9;
+  border-color: #aab;
 }
 
 #button {
@@ -120,7 +125,8 @@ input:-webkit-autofill {
   margin: 20px 0 40px;
   padding: 10px;
   position: relative;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .3), 0 0 40px rgba(0, 0, 0, .1) inset;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
 }
 
 .document: before,
@@ -163,7 +169,7 @@ input:-webkit-autofill {
   display: inline-block;
   font-size: .8em;
   padding: 4px 5px;
-  background: #3cb371;
+  background: #889;
   border-radius: 3px;
   margin-right: 3px;
   text-decoration: none;
@@ -171,7 +177,7 @@ input:-webkit-autofill {
 }
 
 .download a:hover {
-  background: #36a065;
+  background: #667;
 }
 
 .hit {
