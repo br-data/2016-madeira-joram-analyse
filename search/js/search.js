@@ -28,12 +28,12 @@ var mammon = (function () {
 
     var urlString, queryString;
 
-    state.query = query || encodeURIComponent($search.value);
-    state.sorting = sorting || encodeURIComponent(document.querySelector('input[name="sorting"]:checked').value);
-    state.mode = mode || encodeURIComponent(document.querySelector('input[name="mode"]:checked').value);
+    state.query = query || $search.value;
+    state.sorting = sorting || document.querySelector('input[name="sorting"]:checked').value;
+    state.mode = mode || document.querySelector('input[name="mode"]:checked').value;
 
     urlString = encodeURI(searchUrl + '/' + state.mode + '/' + state.query);
-    queryString = '?m=' + state.mode + '&s=' + state.sorting + '&q=' + state.query;
+    queryString = encodeURI('?m=' + state.mode + '&s=' + state.sorting + '&q=' + state.query);
 
     if (window.history) {
 

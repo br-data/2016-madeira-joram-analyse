@@ -68,6 +68,7 @@ input:-webkit-autofill {
   border-bottom-right-radius: 0;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
+    transition: border .2s ease;
 }
 
 #search:focus {
@@ -88,6 +89,7 @@ input:-webkit-autofill {
   line-height: 1em;
   text-align: left;
   padding: 2px 6px 3px 14px;
+  transition: background .2s ease, border .2s ease;
 }
 
 #button:hover {
@@ -186,10 +188,11 @@ input:-webkit-autofill {
   font-size: .8em;
   padding: 4px 5px;
   background: #889;
+  color: #fff;
   border-radius: 3px;
   margin-right: 3px;
   text-decoration: none;
-  color: #fff;
+  transition: background .2s ease, border .2s ease;
 }
 
 .download a:hover {
