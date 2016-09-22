@@ -40,7 +40,7 @@ var mammon = (function () {
       window.history.pushState('', '', queryString);
     }
 
-    $loading.style.display = 'inline-block';
+    $loading.style.visibility = 'visible';
 
     getJSON(urlString, function (results, error) {
 
@@ -145,7 +145,7 @@ var mammon = (function () {
 
     setTimeout(function () {
 
-      $loading.style.display = 'none';
+      $loading.style.visibility = 'hidden';
       $results.classList.add('visible');
     }, 750);
   }
