@@ -91,17 +91,27 @@ Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltext
 ```
 
 ### api.js
+Die Daten des Elasticsearch-Clusters kann man über eine API-Service abfragen. Es gibt verschiedene Möglichkeiten einen Anfrage zustellen:
 
-http://localhost:3003/match/:query
-http://localhost:3003/custom/:query
-http://localhost:3003/fuzzy/:query
-http://localhost:3003/widcard/:query
+- `GET http://localhost:3003/match/:query` Findet exakte Suchausdrücke wie **John Doe** [(mehr Infos)](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html).
+- `GET http://localhost:3003/custom/:query` Findet alle Wörter eines Suchausdrucks: **"John" AND "Doe"**. Unterstützt außerdem Wildcards und einfache Suchoperatoren [(mehr Infos)](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html).
+- `GET http://localhost:3003/fuzzy/:query` Fuzzy-Suche, welche einzelne Begriffe findet, auch wenn sie Buchstabendreher enthalten **Jhon** [(mehr Infos)](// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html).
+- `GET http://localhost:3003/regexp/:query` Regex-Suche für einzelne Begriffe **J.hn*** [(mehr Infos)](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html).
 
-### /search
+Der Elasticsearch-Service wird auch von der Suche verwendet. Die Optionen in der Suchmaske (Standard, Custom, Fuzzy, Regex) bilden genau diese Routen ab. 
+
+Der Elasticsearch-Service kann mit `node api.js POR` gestarten werden.
+
+### Suchmaske /search
+Die Suche ist eine Webanwendung, welche auf den Elasticsearch-Service zugreift. Für jede Suchanfrage bekommt man eine Liste von Dokumenten zurück in denen der Suchbegriff gefunden wurde. Über zwei Buttons kann man dann schnell auf das Original-PDF oder die Text-Version des Dokuments zugreifen.
+
+Die Suchmaske ist dafür gedacht, dass ein Team von Journalisten einfach in den Dokumente des JORAM recherchieren kann. 
 
 ### searchList.js
+Um mehrere Namen zu suchen kann man das Suchskript mit einer Liste füttern. Das Skript verwendet den Elasticsearch-Service und gibt eine CSV-Datei der jeweiligen Anzahl an Treffen pro Name zurück. Gibt es (viele) Treffer für einen Namen, kann das ein Indiz dafür sein, dass die Person auf Madeira eine Unternehmen hat.    
 
 ## Verbesserungen
+- Globale Konfigurationsdatei anlegen
+- API für möglichen Live-Betrieb absichern
 - Ordner anlegen, falls nicht vorhanden
 - Textextrahierung beschleunigen (Mult-Threading)
-
