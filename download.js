@@ -23,6 +23,16 @@ function downloadSite() {
   scraper.maxConcurrency = 5;
   scraper.depth = 2;
 
+  scraper.on('queueerror', function (queueError) {
+
+    console.log('Queue error', queueError);
+  });
+
+  scraper.on('fetcherror', function (fetchError) {
+
+    console.log('Fetch error', fetchError);
+  });
+
   scraper.on('fetchcomplete', function (queueItem, responseBuffer) {
 
     // Get filename
