@@ -15,17 +15,35 @@ var type = 'doc';
 
 function loadFiles() {
 
-  // Get all filenames in the directory
-  fs.readdirSync(dirName).forEach(function (fileName) {
+  // Get file list
+  var files = fs.readdirSync(dirName);
+  var fileCount = files.length;
 
-    // Get file content
-    var fileContent = fs.readFileSync(dirName + fileName, 'utf8');
+  // Recursively go through the file list
+  (function recurse (fileNumber) {
 
-    saveToElastic(fileName, fileContent);
-  });
+    if (fileNumber > 0) {
+
+      var fileName = files[fileNumber];
+
+      // Read file content
+      fs.readFile(dirName + fileName, 'utf8', function (fileContent) {
+
+        saveToElastic(fileName, fileContent, function () {
+
+          recurse(--fileNumber);
+        });
+      });
+
+    } else {
+
+      console.log('Finished processing ' + fileCount + ' documents');
+    }
+  })(fileCount);
 }
 
-function saveToElastic(fileName, fileContent) {
+// Saves file content and meta data to ElasticSearch
+function saveToElastic(fileName, fileContent, callback) {
 
   // Get date from filename, if possible
   var date = fileName.match(/\d{4}-\d{1,2}-\d{1,2}/);
@@ -56,5 +74,6 @@ function saveToElastic(fileName, fileContent) {
     if (error) throw error;
 
     console.log('Inserted document ' + fileName + ' to ElasticSearch');
+    callback();
   });
 }
