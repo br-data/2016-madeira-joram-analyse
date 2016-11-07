@@ -44,6 +44,9 @@ router.get('/match/:query', function (req, res) {
           fields: ['body', 'body.folded']
         }
       },
+      _source: {
+        excludes: ['body*']
+      },
       highlight: {
         fields: {
           body: {},
@@ -77,6 +80,9 @@ router.get('/custom/:query', function (req, res) {
           analyze_wildcard: true
         }
       },
+      _source: {
+        excludes: ['body*']
+      },
       highlight: {
         fields: {
           body: {},
@@ -106,6 +112,9 @@ router.get('/fuzzy/:query', function (req, res) {
           body: query
         }
       },
+      _source: {
+        excludes: ['body*']
+      },
       highlight: {
         fields: {
           body: {}
@@ -133,6 +142,9 @@ router.get('/regexp/:query', function (req, res) {
         regexp: {
           body: query
         }
+      },
+      _source: {
+        excludes: ['body*']
       },
       highlight: {
         fields: {
