@@ -21,10 +21,16 @@ function loadFiles() {
   // Get file list
   files = fs.readdirSync(dirName);
 
-  // Include only .txt files
+  // Include only .txt files, exclude files from 2000 to 2005
   files = files.filter(function (file) {
 
-    return file.indexOf('.txt') > -1;
+    return file.indexOf('.txt') > -1 &&
+      file.indexOf('2000') < 0 &&
+      file.indexOf('2001') < 0 &&
+      file.indexOf('2002') < 0 &&
+      file.indexOf('2003') < 0 &&
+      file.indexOf('2004') < 0 &&
+      file.indexOf('2005') < 0;
   });
 
   fileCount = files.length;
@@ -48,7 +54,7 @@ function loadFiles() {
       });
     } else {
 
-      // saveFile('unipcs-arraiol.txt', getUnique(result).join('\n'));
+      saveFile('unipcs-arraiol.txt', getUnique(result).join('\n'));
 
       console.log('Found ' + nameCount + ' name matches');
       console.log('Found ' + nipcCount + ' nipcs');
@@ -75,7 +81,7 @@ function findRelated(fileName, body, callback) {
   }
 
   // Find all NIPCs
-  nipcRegexp = new RegExp('\s[56789][\\d|\\s]{7,9}\\d', 'g');
+  nipcRegexp = new RegExp('\\s[56789][\\d|\\s]{7,9}\\d\\s', 'g');
 
   while ((nipcResults = nipcRegexp.exec(body))) {
 
@@ -94,10 +100,6 @@ function findRelated(fileName, body, callback) {
       return getClosest(nipcIndices, nameIndex);
     });
   }
-
-  // console.log(nameIndices);
-  // console.log(nipcIndices.map(function (obj) { return obj.result; }));
-  // console.log(nipcs);
 
   // Update counter
   nameCount += nameIndices.length;
