@@ -4,7 +4,7 @@ var path = require('path');
 
 // Configuration
 var dirName = './text/',
-  entity = 'JOS[E|É] CARLOS RODRIGUES ARRAIOL',
+  entity = 'Rosa Maria de Canha Ornelas Fraz[ã|a]o Afonso',
   nameCount = 0,
   nipcCount = 0,
   result = [];
@@ -54,10 +54,10 @@ function loadFiles() {
       });
     } else {
 
-      saveFile('unipcs-arraiol.txt', getUnique(result).join('\n'));
+      saveFile('unipcs.txt', getUnique(result).join('\n'));
 
-      console.log('Found ' + nameCount + ' name matches');
-      console.log('Found ' + nipcCount + ' nipcs');
+      console.log('Found ' + nameCount + ' matches');
+      console.log('Found ' + getUnique(result).length + ' unique NIPCs');
       console.log('Finished processing ' + fileCount + ' documents');
     }
   })(fileCount);
@@ -70,7 +70,7 @@ function findRelated(fileName, body, callback) {
   var nipcs = [];
 
   // Remove line breaks
-  body = body.replace(/\n/g,' ');
+  body = body.replace(/\n|\r/g,' ');
 
   // Find all occurrences of the name
   nameRegexp = new RegExp(entity, 'gi');
@@ -80,16 +80,22 @@ function findRelated(fileName, body, callback) {
     nameIndices.push(nameResults.index);
   }
 
-  // Find all NIPCs
-  nipcRegexp = new RegExp('\\s[56789][\\d|\\s]{7,9}\\d\\s', 'g');
+  // Find all NIPCs starting with 5, 6, 7 or 8 (businesses)
+  nipcRegexp = new RegExp('\\s[5678][\\d|\\s]{7,9}\\d\\s', 'g');
 
   while ((nipcResults = nipcRegexp.exec(body))) {
 
-    nipcIndices.push({
+    var nipc = nipcResults[0].replace(/\s/g,'').trim();
 
-      result: nipcResults[0].replace(/\s/g,'').trim(),
-      index: nipcResults.index
-    });
+    // Check for correct NIPC length
+    if (nipc.length === 9) {
+
+      nipcIndices.push({
+
+        result: nipc,
+        index: nipcResults.index
+      });
+    }
   }
 
   // Do nothing if there are more names than NIPCs
@@ -135,7 +141,7 @@ function getUnique(arr) {
 
   for (var i = 0; i < arr.length; ++i) {
 
-    if (i == 0 || arr[i] != arr[i - 1]) {
+    if (i === 0 || arr[i] != arr[i - 1]) {
 
       result.push(arr[i]);
     }
