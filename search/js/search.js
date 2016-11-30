@@ -93,7 +93,7 @@ var mammon = (function () {
       var supplement = docs[doc]._source.issue;
       var date = new Date(docs[doc]._source.date).toLocaleDateString();
       var file = docs[doc]._source.file;
-      var hits = docs[doc].highlight.body || docs[doc].highlight['body.folded'];
+      var hits = docs[doc].highlight['body.folded'] || docs[doc].highlight.body;
 
       var $docWrapper = createElement('div', $results, ['className', 'document']);
 
