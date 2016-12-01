@@ -3,10 +3,13 @@ var fs = require('fs');
 var elastic = require('elasticsearch');
 
 // Configuration
-var dirName = './text/';
+var dirName = process.argv[2] || './text/';
 var client = new elastic.Client({ host: 'localhost:9200' });
 var index = 'joram';
 var type = 'doc';
+
+var fileCount = 0;
+var fileList = [];
 
 (function init() {
 
@@ -16,34 +19,46 @@ var type = 'doc';
 function loadFiles() {
 
   // Get file list
-  var files = fs.readdirSync(dirName);
-  var fileCount = files.length;
+  fileList = fs.readdirSync(dirName);
 
-  // Recursively go through the file list
-  (function recurse (fileNumber) {
+  // Include only .txt files
+  fileList = fileList.filter(function (file) {
 
-    if (fileNumber > 0) {
+    return file.indexOf('.txt') > -1;
+  });
 
-      var fileName = files[fileNumber];
+  // Save file count
+  fileCount = fileList.length;
 
-      // Read file content
-      fs.readFile(dirName + fileName, 'utf8', function (fileContent) {
+  processFiles(fileCount);
+}
 
-        saveToElastic(fileName, fileContent, function () {
+function processFiles (fileNumber) {
 
-          recurse(--fileNumber);
-        });
+  if (fileNumber > 0) {
+
+    var fileName = fileList[fileNumber - 1];
+
+    // Read file content
+    fs.readFile(dirName + fileName, 'utf8', function (error, body) {
+
+      if (error) { throw error; }
+
+      saveToElastic(fileName, body, function () {
+
+        // Recursion
+        processFiles(--fileNumber);
       });
+    });
 
-    } else {
+  } else {
 
-      console.log('Finished processing ' + fileCount + ' documents');
-    }
-  })(fileCount);
+    console.log('Finished processing ' + fileCount + ' documents');
+  }
 }
 
 // Saves file content and meta data to ElasticSearch
-function saveToElastic(fileName, fileContent, callback) {
+function saveToElastic(fileName, body, callback) {
 
   // Get date from filename, if possible
   var date = fileName.match(/\d{4}-\d{1,2}-\d{1,2}/);
@@ -67,7 +82,7 @@ function saveToElastic(fileName, fileContent, callback) {
       supplement: supplement,
       date: date,
       file: fileName,
-      body: fileContent
+      body: body
     }
   }, function (error) {
 
