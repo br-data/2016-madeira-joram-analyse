@@ -4,7 +4,7 @@ var request = require('request');
 
 // Use command line arguments or predefined paths
 var inputFile = process.argv[2] || './names.txt';
-var outputFile = process.argv[3] || './names-results.txt';
+var outputFile = process.argv[3] || './names-result.csv';
 
 // Returns exact matches only "John Doe"
 var searchUrl = 'http://ddj.br.de/mammon-service/match/';
