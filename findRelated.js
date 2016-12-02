@@ -1,168 +1,220 @@
 // Search persons and related entities
-var fs = require('fs');
-var path = require('path');
+var findRelated = (function() {
 
-// Configuration
-var dirName = './text/',
-  entity = 'Rosa Maria de Canha Ornelas Fraz[ã|a]o Afonso',
-  nameCount = 0,
-  nipcCount = 0,
-  result = [];
+  'use strict';
 
-(function init() {
+  var fs = require('fs');
+  var path = require('path');
 
-  loadFiles();
-})();
+  // Configuration
+  var inputDir = './text';
+  var searchString = 'Roberto Luiz Homem';
+  var outputDir = './results';
 
-function loadFiles() {
+  var nameCount, nipcCount;
+  var fileList, result;
 
-  var files, fileCount;
+  var callback = function() { return; };
 
-  // Get file list
-  files = fs.readdirSync(dirName);
+  // Execute script if not used as a module
+  if (!module.parent) {
 
-  // Include only .txt files, exclude files from 2000 to 2005
-  files = files.filter(function (file) {
+    init(process.argv[2], process.argv[3], process.argv[4]);
+  }
 
-    return file.indexOf('.txt') > -1 &&
-      file.indexOf('2000') < 0 &&
-      file.indexOf('2001') < 0 &&
-      file.indexOf('2002') < 0 &&
-      file.indexOf('2003') < 0 &&
-      file.indexOf('2004') < 0 &&
-      file.indexOf('2005') < 0;
-  });
+  function init(_inputDir, _searchString, _outputDir, _callback) {
 
-  fileCount = files.length;
+    // Overwrite default configuration with arguments
+    // from module or command line interface
+    inputDir = _inputDir || inputDir;
+    searchString = _searchString || searchString;
+    outputDir = _outputDir || outputDir;
+    callback = _callback || callback;
+
+    // Reset results
+    nameCount = 0;
+    nipcCount = 0;
+    fileList = [];
+    result = [];
+
+    // Create output folder if missing
+    if (!fs.existsSync(outputDir)) {
+
+      fs.mkdirSync(outputDir);
+    }
+
+    loadFiles(_callback);
+  }
+
+  function loadFiles() {
+
+    // Get file list
+    fileList = fs.readdirSync(inputDir);
+
+    // Include only .txt files, exclude files from 2000 to 2005
+    fileList = fileList.filter(function (file) {
+
+      return file.indexOf('.txt') > -1 &&
+        file.indexOf('2000') < 0 &&
+        file.indexOf('2001') < 0 &&
+        file.indexOf('2002') < 0 &&
+        file.indexOf('2003') < 0 &&
+        file.indexOf('2004') < 0 &&
+        file.indexOf('2005') < 0;
+    });
+
+    processFiles(fileList.length);
+  }
 
   // Recursively go through the file list
-  (function recurse (fileNumber) {
+  function processFiles(fileNumber) {
 
     if (fileNumber > 0) {
 
-      var fileName = files[fileNumber - 1];
+      var fileName = fileList[fileNumber - 1];
 
       // Read file content
-      fs.readFile(dirName + fileName, 'utf8', function (error, body) {
+      fs.readFile(path.join(inputDir, fileName), 'utf8', function (error, body) {
 
         if (error) { throw error; }
 
         findRelated(fileName, body.toString(), function () {
 
-          recurse(--fileNumber);
+          // Recursion
+          processFiles(--fileNumber);
         });
       });
     } else {
 
-      saveFile('unipcs.txt', getUnique(result).join('\n'));
+      // Get unique NIPCs
+      var uniqueNipcs = getUnique(result);
 
+      console.log('Completed search for ' + searchString);
       console.log('Found ' + nameCount + ' matches');
       console.log('Found ' + getUnique(result).length + ' unique NIPCs');
-      console.log('Finished processing ' + fileCount + ' documents');
+
+      saveFile(
+        path.join(outputDir, (dashcase(searchString) + '.txt')),
+        uniqueNipcs.join('\n')
+      );
+
+      callback();
     }
-  })(fileCount);
-}
-
-function findRelated(fileName, body, callback) {
-
-  var nameRegexp, nameResults, nameIndices = [];
-  var nipcRegexp, nipcResults, nipcIndices = [];
-  var nipcs = [];
-
-  // Remove line breaks
-  body = body.replace(/\n|\r/g,' ');
-
-  // Find all occurrences of the name
-  nameRegexp = new RegExp(entity, 'gi');
-
-  while ((nameResults = nameRegexp.exec(body))) {
-
-    nameIndices.push(nameResults.index);
   }
 
-  // Find all NIPCs starting with 5, 6, 7 or 8 (businesses)
-  nipcRegexp = new RegExp('\\s[5678][\\d|\\s]{7,9}\\d\\s', 'g');
+  function findRelated(fileName, body, callback) {
 
-  while ((nipcResults = nipcRegexp.exec(body))) {
+    var nameRegexp, nameResults, nameIndices = [];
+    var nipcRegexp, nipcResults, nipcIndices = [];
+    var nipcs = [];
 
-    var nipc = nipcResults[0].replace(/\s/g,'').trim();
+    // Remove line breaks
+    body = body.replace(/\n|\r/g,' ');
 
-    // Check for correct NIPC length
-    if (nipc.length === 9) {
+    // Find all occurrences of the searchString
+    nameRegexp = new RegExp(searchString, 'gi');
 
-      nipcIndices.push({
+    while ((nameResults = nameRegexp.exec(body))) {
 
-        result: nipc,
-        index: nipcResults.index
+      nameIndices.push(nameResults.index);
+    }
+
+    // Find all NIPCs starting with 5, 6, 7 or 8 (businesses)
+    nipcRegexp = new RegExp('\\s[5678][\\d|\\s]{7,9}\\d\\s', 'g');
+
+    while ((nipcResults = nipcRegexp.exec(body))) {
+
+      var nipc = nipcResults[0].replace(/\s/g,'').trim();
+
+      // Check for correct NIPC length
+      if (nipc.length === 9) {
+
+        nipcIndices.push({
+
+          result: nipc,
+          index: nipcResults.index
+        });
+      }
+    }
+
+    // Do nothing if there are more names than NIPCs
+    if (nipcIndices.length > nameIndices.length) {
+
+      nipcs = nameIndices.map(function (nameIndex) {
+
+        return getClosest(nipcIndices, nameIndex);
       });
     }
+
+    // Update counter
+    nameCount += nameIndices.length;
+    nipcCount += nipcIndices.length;
+
+    // Save result
+    result.push.apply(result, nipcs);
+
+    callback();
   }
 
-  // Do nothing if there are more names than NIPCs
-  if (nipcIndices.length > nameIndices.length) {
+  function getClosest(arr, closestTo){
 
-    nipcs = nameIndices.map(function (nameIndex) {
+    var result;
 
-      return getClosest(nipcIndices, nameIndex);
-    });
+    for (var i = 0; i < arr.length; i++) {
+
+      if (arr[i].index < closestTo) {
+
+        result = arr[i].result;
+      }
+    }
+
+    return result;
   }
 
-  // Update counter
-  nameCount += nameIndices.length;
-  nipcCount += nipcIndices.length;
+  // Returns a sorted array with unique values
+  function getUnique(arr) {
 
-  // Save result
-  result.push.apply(result, nipcs);
+    var result = [];
 
-  callback();
-}
+    arr.sort();
 
-function getClosest(arr, closestTo){
+    for (var i = 0; i < arr.length; ++i) {
 
-  var result;
+      if (i === 0 || arr[i] != arr[i - 1]) {
 
-  for (var i = 0; i < arr.length; i++) {
+        result.push(arr[i]);
+      }
+    }
 
-    if (arr[i].index < closestTo) {
+    return result;
+  }
 
-      result = arr[i].result;
+  function dashcase(string) {
+
+    return string.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .substring(0, 32);
+  }
+
+  function saveFile(relativePath, string) {
+
+    // Normalize file path
+    relativePath = path.normalize(relativePath);
+
+    try {
+
+      console.log('Saved file', relativePath);
+
+      return fs.writeFileSync(relativePath, string, 'utf8');
+    } catch (error) {
+
+      console.error(error);
     }
   }
 
-  return result;
-}
+  module.exports = {
 
-// Returns a sorted array with unique values
-function getUnique(arr) {
-
-  var result = [];
-
-  arr.sort();
-
-  for (var i = 0; i < arr.length; ++i) {
-
-    if (i === 0 || arr[i] != arr[i - 1]) {
-
-      result.push(arr[i]);
-    }
-  }
-
-  return result;
-}
-
-function saveFile(relativePath, string) {
-
-  // Normalize file path
-  relativePath = path.normalize(relativePath);
-
-  try {
-
-    console.log('Saved file', relativePath);
-
-    // Save file
-    return fs.writeFileSync(relativePath, string, 'utf8');
-  } catch (error) {
-
-    console.log(error);
-  }
-}
+    init: init
+  };
+}());
