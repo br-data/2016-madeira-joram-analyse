@@ -5,8 +5,8 @@ var dir = require('node-dir');
 var tika = require('tika');
 
 // Configuration
-var inputFolder = './pdf/';
-var outputFolder = './text/';
+var inputDir = './pdf/';
+var outputDir = './text/';
 
 // Tika and OCR options
 var options = {
@@ -19,13 +19,18 @@ var options = {
 
 (function init() {
 
+  if (!fs.existsSync(outputDir)) {
+
+    fs.mkdirSync(outputDir);
+  }
+
   readFiles(processFiles);
 })();
 
 function readFiles(callback) {
 
   // Get a list of all files
-  dir.files(inputFolder, function(error, files) {
+  dir.files(inputDir, function(error, files) {
 
     if (error) throw error;
 
@@ -70,7 +75,7 @@ function extractText(filePath, callback) {
     var fileName = filePath.substr(filePath.lastIndexOf('/') + 1);
 
     // Save extracted content as text file
-    saveFile(outputFolder + fileName + '.txt', result);
+    saveFile(outputDir + fileName + '.txt', result);
     callback();
   });
 }

@@ -68,7 +68,7 @@ input:-webkit-autofill {
   border-bottom-right-radius: 0;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
-    transition: border .2s ease;
+  transition: border .2s ease;
 }
 
 #search:focus {
@@ -224,7 +224,7 @@ input:-webkit-autofill {
 }
 
 .error {
-  color: #8b0000;
+  color: #b22222;
 }
 
 .warning {
