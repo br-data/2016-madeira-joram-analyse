@@ -9,12 +9,20 @@
 
   <link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAB8UlEQVRIS7XVS6hNcRTH8c/1KGSCARIDUkrERMljYiAUwkwSKRMyQAYIAyLMZSAZSEkIEzOvMJA8rmSglJQJ8oyQlta97bvPPvvswbmrdvuc/r//+q7Hf/13j0G2nob+RyCez/jbcM9/WR1gJrZhOaak0594hPM4gx+dYFWA4TiGHRhS4+ANNuBOHaQMGIZLWFnY9A738QVTMR8RRNgvrMGNdpAy4Cj2pPgDtuNCqe4TcRzrUxfgOXhdBSkCpuElIouPWIgXNemfwM5cj6zXdQJEVLtStAlnOzRwKB5jVmY4GVHOAVbM4AlmI0ozHr87nRBsxanUbcS5OsB3jMRNLG3gPCQRUAQWdhj76gARcaR9FasbAqbjVWpPFkrcv71YoreYlI2NIWtiK3A9hbsRjW/bg4uFkxCpP2tAiJrHsIXFqbtXB1iFKym4hSX4UwNZgNs57TEDUa6We6pYovj9APPSaWS0GV8rIItwGeNyLZobTW6x8iRHFAEZm8o416cz0pjYGMYYqLWlizKCWIa7dSXqW5uLa9nwBm3ol1RC2l3XY3AQWzCqgtKLAznF8e6zFkinD85oLMaMBL3HQzwtOI1A2kI6AZqWqAoS1/rzbgEikDJkL450ExCQ/TiET4ij3NttQEAm5NfvW/wZDMCAvv0DZEFgGQvWNqMAAAAASUVORK5CYII=" rel="icon" type="image/x-icon">
 
+  <script type="text/javascript" src="js/modal.js"></script>
   <script type="text/javascript" src="js/search.js"></script>
-  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script type="text/javascript" src="js/init.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/modal.css">
+  <link rel="stylesheet" type="text/css" href="css/search.css">
 
 </head>
 
 <body>
+
+  <div id="help-button" class="badge">
+    <div>?</div>
+  </div>
 
   <header>
 
@@ -88,5 +96,42 @@
   </header>
 
   <section id="results" class="results center"></section>
+
+  <section id="help" class="modal" style="opacity: 0;">
+
+    <div class="content">
+
+      <div class="close">&times;</div>
+
+      <h3>Help</h3>
+
+      <p>There are four different ways to search for words (terms) or sentences (full text):</p>
+
+      <p><strong>Standard search</strong></p>
+      <p>Full text search. Finds exact word combinations like <code>John Doe</code>. Diacritcs are ignored and a search for <code>John Doe</code> will also find <code>Jóhñ Döé</code>.</p>
+
+      <p><strong>Custom search</strong></p>
+      <p>Full text search. By default, the custom search finds all documents that contain <code>John</code> AND <code>Doe</code>. Supports wildcards and simple search operators:</p>
+      <ul>
+        <li><code>+</code> signifies AND operation</li>
+        <li><code>|</code> signifies OR operation</li>
+        <li><code>-</code> negates a single token</li>
+        <li><code>"</code> wraps a number of tokens to signify a phrase for searching</li>
+        <li><code>*</code> at the end of a term signifies a prefix query</li>
+        <li><code>~N</code> after a word signifies edit distance (fuzziness)</li>
+        <li><code>~N</code> after a phrase signifies slop amount</li>
+      </ul>
+
+      <p><strong>Fuzzy search</strong></p>
+      <p>Term-based search. Finds words, even if they contain a typo or OCR mistake. A search for <code>Jhon</code> or <code>J°hn</code> will also find <code>John</code>.</p>
+
+      <p><strong>Regex search</strong></p>
+      <p>Term-based search for experts. Uses Regex patterns like <code>J.h*</code> for searching. This Regex will find words such as <code>John</code>, <code>Jahn</code> and <code>Johnson</code>.
+
+      <p><strong>Data source:</strong> <a href="http://www.legilux.public.lu/entr/index.php" target="_blank">http://www.legilux.public.lu/entr/index.php</a></p>
+
+    </div>
+
+  </section>
 
 </body>

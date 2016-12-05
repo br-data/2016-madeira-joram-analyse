@@ -1,4 +1,4 @@
-var mammon = (function () {
+var search = (function () {
 
   // var searchUrl = 'http://localhost:3003';
   var searchUrl = 'http://ddj.br.de/mammon-service';
@@ -9,8 +9,6 @@ var mammon = (function () {
     mode: undefined,
     results: undefined
   };
-
-  document.addEventListener('DOMContentLoaded', init, false);
 
   function init() {
 
