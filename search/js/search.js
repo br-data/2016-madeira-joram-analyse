@@ -117,12 +117,12 @@ var mammon = (function () {
     }
 
     createElement('p', $count,
-      ['textContent', (hitCount + ' Treffer in ' + docs.length + ' Dokumenten (' + results.took + ' ms)')]);
+      ['textContent', (hitCount + ' hits in ' + docs.length + ' documents (' + results.took + ' ms)')]);
 
     if (docs.length === 1000) {
 
       createElement('p', $count,
-        ['textContent', ' Es werden nicht alle Suchergebnisse angezeigt']);
+        ['textContent', 'Too many results. Please refine your search.']);
     }
 
     showResults();
@@ -227,13 +227,13 @@ var mammon = (function () {
             console.error(error);
 
             callback({}, {
-              message: 'Fehler: unerwartete Antwort vom Server'
+              message: 'Error: unexpected response from server'
             });
           }
         } else {
 
           callback({}, {
-            message: 'Fehler: falsche Anfrage oder Ressource nicht verfügbar'
+            message: 'Error: Invalid query or resource not available'
           });
         }
       }
@@ -244,7 +244,7 @@ var mammon = (function () {
       console.error(error);
 
       callback({}, {
-        message: 'Fehler: keine Antwort vom Server'
+        message: 'Error: server not responding'
       });
     };
 
@@ -284,7 +284,7 @@ var mammon = (function () {
     }
   }
 
-  function isElement(o){
+  function isElement(o) {
 
     return (
       typeof HTMLElement === 'object' ? o instanceof HTMLElement :
@@ -293,6 +293,7 @@ var mammon = (function () {
   }
 
   return {
+
     init: init,
     search: search
   };
