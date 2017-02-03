@@ -1,5 +1,5 @@
-// Search persons and related entities
-var findRelated = (function() {
+// Find unique entities (persons and companies)
+var findEntities = (function() {
 
   'use strict';
 
@@ -8,7 +8,6 @@ var findRelated = (function() {
 
   // Configuration
   var inputDir = './text';
-  var searchString = 'Roberto Luiz Homem';
   var outputDir = './results';
 
   var nameCount, nipcCount;
@@ -19,7 +18,7 @@ var findRelated = (function() {
   // Execute script if not used as a module
   if (!module.parent) {
 
-    init(process.argv[2], process.argv[3], process.argv[4]);
+    init(process.argv[2], process.argv[3]);
   }
 
   function init(_inputDir, _searchString, _outputDir, _callback) {
@@ -27,7 +26,6 @@ var findRelated = (function() {
     // Overwrite default configuration with arguments
     // from module or command line interface
     inputDir = _inputDir || inputDir;
-    searchString = _searchString || searchString;
     outputDir = _outputDir || outputDir;
     callback = _callback || callback;
 
@@ -89,16 +87,14 @@ var findRelated = (function() {
       // Get unique NIPCs
       var uniqueNipcs = getUnique(result);
 
-      console.log(searchString + ',' + nameCount + ',' + getUnique(result).length );
+      console.log('Completed search for ' + searchString);
+      console.log('Found ' + nameCount + ' matches');
+      console.log('Found ' + getUnique(result).length + ' unique NIPCs');
 
-      // console.log('Completed search for ' + searchString);
-      // console.log('Found ' + nameCount + ' matches');
-      // console.log('Found ' + uniqueNipcs.length + ' unique NIPCs');
-
-      // saveFile(
-      //   path.join(outputDir, (dashcase(searchString) + '.txt')),
-      //   uniqueNipcs.join('\n')
-      // );
+      saveFile(
+        path.join(outputDir, (dashcase(searchString) + '.txt')),
+        uniqueNipcs.join('\n')
+      );
 
       callback();
     }

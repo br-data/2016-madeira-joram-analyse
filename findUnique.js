@@ -93,17 +93,21 @@ var findRelated = (function() {
       console.log('Found ' + uniqueNifs.length + ' unique NIFs ' + nifData.length);
       console.log('Found ' + uniqueNipcs.length + ' unique NIPCs ' + nipcData.length);
 
-      // saveFile(
-      //   path.join(outputDir, (dashcase(searchString) + '.txt')),
-      //   uniqueNipcs.join('\n')
-      // );
+      saveFile(
+        path.join(outputDir, 'uniqueNIFs.txt'),
+        uniqueNifs.join('\n')
+      );
+
+      saveFile(
+        path.join(outputDir, 'uniqueNIPCs.txt'),
+        uniqueNipcs.join('\n')
+      );
 
       callback();
     }
   }
 
   function processBody(fileName, body, callback) {
-
 
     // Find all NIFs starting with 1 or 2 (persons)
     var nifRegexp = new RegExp('\\s[12][\\d|\\s]{7,9}\\d\\s', 'g');

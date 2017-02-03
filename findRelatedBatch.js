@@ -2,7 +2,7 @@ var fs = require('fs');
 var findRelated = require('./findRelated.js');
 
 // Configuration
-var inputFile = process.argv[2] || './gerentes.txt';
+var inputFile = process.argv[2] || './nifs.txt';
 
 var nameCount = 0;
 var nameList = [];
