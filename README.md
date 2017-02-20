@@ -166,7 +166,7 @@ Saved file result/289965543.txt
 ```
 
 ### getCompanyInfo.js
-Findet für die Steuernummer eines Unternehmens den zugehörigen Namen, Stadt und Aktivitäten der letzten Jahre. Kann umgekehrt auch dazu verwendet werden, Namen zu Steuernummern aufzulösen. Das Skript verwendet die [Schnittstelle](https://www.racius.com/app/searchsolr/autocomplete/?q=511136706) des portugiesischen Dienstleisters **Racius**.
+Findet für die Steuernummer eines Unternehmens den zugehörigen Namen, Stadt und Aktivitäten der letzten Jahre. Kann umgekehrt auch dazu verwendet werden, Namen zu Steuernummern aufzulösen. Das Skript verwendet die [Schnittstelle](https://www.racius.com/app/searchsolr/autocomplete/?q=511136706) des portugiesischen Dienstleisters [Racius](https://www.racius.com/).
 
 ```
 $ node getCompanyInfo.js "511136706"
@@ -182,6 +182,30 @@ $ node getCompanyInfo.js "511136706"
 
 ### countPages.sh
 Kleines Skript um die Anzahl aller Seiten mehrerer PDF-Dokumente zu ermitteln.
+
+## Entitäten
+Eine Liste aller Unternehmen in Freihandelszone Madeira liegt unter `entities/madeira-ibc-companies.csv`. Die Daten kommen zum einem Teil aus dem Amtsblatt Joram und zum anderem von [Racius](https://www.racius.com/).
+
+Die Liste enthält folgende Merkmale:
+- **nipc**: portugiesische Steuernummer
+- **name**: Name des Unternehmens
+- **originial-address**: letzte Adresse
+- **merged-address**: normalisierte letzte Adresse
+- **address-count**: Anzahl der gleichen Adressen
+- **zip-code**: Postleitzahl
+- **city**: Stadt
+- **form**: Gesellschaftform
+- **cae-code**: Tätigkeitsfeld
+- **active-2016**: Anzahl der Aktivitäten im Jahr 2016
+- **active-2015**: Anzahl der Aktivitäten im Jahr 2015
+- **active-2014**: Anzahl der Aktivitäten im Jahr 2014
+- **active-2013**: Anzahl der Aktivitäten im Jahr 2013
+- **active-2012**: Anzahl der Aktivitäten im Jahr 2012
+- **active-2012-2016**: Anzahl der Aktivitäten in den Jahr 2012 bis 2016
+
+Die Anzahl der Aktivitäten ist wichtig, um herauszufinden, ob das Unternehmen noch auf Madeira tätig ist.
+
+Eine Liste der Management-Firmen findet sich unter `entities/madeira-managment-companies.csv`. Bemerkenswert ist, dass die meisten Unternehmen genau unter diesen zwanzig Adressen registriert sind.
 
 ## Verbesserungen
 - Globale Konfigurationsdatei anlegen
