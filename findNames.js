@@ -69,6 +69,7 @@ function processNames(error, result) {
     } else {
 
       console.log('Finished processing ' + count + ' names');
+      console.log('Saved file ' + outputFile);
     }
   }
 }

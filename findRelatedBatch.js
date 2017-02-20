@@ -33,7 +33,7 @@ function processNames(nameIndex) {
     // Get current name
     var name = nameList[nameIndex - 1];
 
-    findRelated.init('./text', name, './result', function () {
+    findRelated.init('./text', name, './results', function () {
 
       // Recursion
       processNames(--nameIndex);

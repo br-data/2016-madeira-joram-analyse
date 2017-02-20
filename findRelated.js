@@ -8,8 +8,8 @@ var findRelated = (function() {
 
   // Configuration
   var inputDir = './text';
-  var searchString = 'Roberto Luiz Homem';
   var outputDir = './results';
+  var searchString = 'Roberto Luiz Homem';
 
   var nameCount, nipcCount;
   var fileList, result;
@@ -89,16 +89,13 @@ var findRelated = (function() {
       // Get unique NIPCs
       var uniqueNipcs = getUnique(result);
 
-      console.log(searchString + ',' + nameCount + ',' + getUnique(result).length );
+      console.log('Completed search for ' + searchString);
+      console.log('Found ' + uniqueNipcs.length + ' unique matches from ' + nameCount + ' total matches' );
 
-      // console.log('Completed search for ' + searchString);
-      // console.log('Found ' + nameCount + ' matches');
-      // console.log('Found ' + uniqueNipcs.length + ' unique NIPCs');
-
-      // saveFile(
-      //   path.join(outputDir, (dashcase(searchString) + '.txt')),
-      //   uniqueNipcs.join('\n')
-      // );
+      saveFile(
+        path.join(outputDir, (dashcase(searchString) + '.txt')),
+        uniqueNipcs.join('\n')
+      );
 
       callback();
     }

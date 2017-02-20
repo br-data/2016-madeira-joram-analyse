@@ -1,5 +1,9 @@
-# Mammon Analyse
-Sammlung an Werkzeugen für das Projekt _Mammon_. Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltextsuchmaschine [Elasticsearch](https://www.elastic.co/products/elasticsearch) zum Einsatz.
+# Steuerparadies Madeira – Analyse
+Sammlung an Werkzeugen um das Amtsblatt von Madeira ([Joram](http://www.gov-madeira.pt/joram/4serie/)) zu durchsuchen und analysieren. Madeira ist ein Steuerparadies mit Segen der EU-Kommission. Die Analyse dient dazu, bekannte Privatpersonen und internationale Großkonzerne zu finden, die auf Madeira tätig sind. Außerdem helfen die Werkzeuge dabei Scheinarbeitsplätze und Briefkastenfirmen aufzudecken.
+
+**Suchmaschine**: http://ddj.br.de/mammon
+**Benutzer**: jedermann
+**Passwort**: ab.auf.die.insel!
 
 ## Verwendung
 1. Repository klonen `git clone https://...`
@@ -8,10 +12,13 @@ Sammlung an Werkzeugen für das Projekt _Mammon_. Um die extrahierten Dokumente 
 
 **Hinweis:** Node.js bekommt standardgemäß nur 512 MB Arbeitsspeicher. Unter Umständen reicht das nicht aus und führt zu einem Fehler *FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - process out of memory*. In diesem Fall kann man den verfügbaren Speicher einmalig auf 4 GB erhöhen: `node --max_old_space_size=4000000 import.js`
 
-## Datenquelle
-Joram
+## Abhängigkeiten
+Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltextsuchmaschine [Elasticsearch](https://www.elastic.co/products/elasticsearch) zum Einsatz. Um die Dokumentensuche nutzen zu können, muss Elasticsearch in der Version 2.3 installiert sein. 
 
-## Workflow
+## Datenquelle
+Die Regionalregierung Madeiras veröffentlicht nahezu täglich das Amtsblatt [Jornal Oficial da Região Autónoma da Madeira](http://www.gov-madeira.pt/joram/4serie/), kurz Joram. Dort werden alle Firmeneintragungen, Änderungen der Geschäftsführung oder Umbenennungen veröffentlicht. Viele Ausgaben des Joram liegen jedoch nur als eingescannte Dokumente vor und waren für Suchmaschinen nicht lesbar. Der Dokumenten-Workflow schafft hier Abhilfe.
+
+## Dokumente durchsuchen
 1. **download.js** lädt alle PDFs aus dem Unternehmensregister Madeiras (seit 1998) herunter.
 2. **extract.js** wandelt alle PDFs in Textdateien um. Bei Scans wird eine Texterkennung (OCR) durchgeführt.
 3. **prepare.js** bereitet Elasticseach für die Indizierung der Texte vor.
@@ -20,7 +27,7 @@ Joram
 6. **search** Webbasierte Suchmaske benutzen.
 
 ### download.js
-Lädt alle PDFs aus dem Unternehmensregister [Jornal Oficial da Região Autónoma da Madeira](http://www.gov-madeira.pt/joram/4serie/) herunter. Das Skript verwendet dabei die Biblothek [node-simplecrawler](https://github.com/cgiffard/node-simplecrawler/), die es ermöglicht mehrere Verbindungen gleichzeitig aufzubauen und die Verzeichnisse automatisch zu durchsuchen. Dabei werden nur Dateien mit dem MIME-Typ `application/pdf` heruntergeladen. Die Dateien werden im Verzeichnis `./pdf` gespeichert. 
+Lädt alle PDFs aus dem Joram herunter. Das Skript verwendet dabei die Biblothek [node-simplecrawler](https://github.com/cgiffard/node-simplecrawler/), die es ermöglicht mehrere Verbindungen gleichzeitig aufzubauen und die Verzeichnisse automatisch zu durchsuchen. Dabei werden nur Dateien mit dem MIME-Typ `application/pdf` heruntergeladen. Die Dateien werden im Verzeichnis `./pdf` gespeichert. 
 
 ### extract.js
 Speichert alle Inhalte der PDFs als Textdatei. Manche PDFs enthalten Scans von Dokumenten. Die Texte dieser Scans werden mithilfe von [Tesseract](https://github.com/tesseract-ocr/tesseract) ausgelesen (OCR). Das Skript verwendet [Apache Tika](https://tika.apache.org/) und [node-tika](https://github.com/ICIJ/node-tika) als Schnittstelle zwischen Node.js und Tika (Java). Die extrahierten Texte werden im Verzeichnis `./text` abgelegt.
@@ -28,7 +35,7 @@ Speichert alle Inhalte der PDFs als Textdatei. Manche PDFs enthalten Scans von D
 **Hinweis:** Tika könnte auch Metadaten aus den Dokumenten extrahieren, diese werden aber in diesem Fall ignoriert, da sie keinen Erkenntnisgewinn versprechen.
 
 ### prepare.js
-Bereitet einen Elasticsearch-Index für den Import von Dokumenten vor. Der alte Index wird dabei gelöscht. Um nach Begriffen mit diakritischen Zeichen suchen zu können wird eine eigener Analyzer mit [aciifolding](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/asciifolding-token-filter.html) angelegt. Dieser Analyser ersetze diakritische Zeichen mit den entsprechenden ASCII-Zeichen. So wird _Conceição_ im Feld **body** zu _Conceicao_ im Feld **body.folded**. Die betrifft auch das Mapping.
+Das Skript bereitet einen Elasticsearch-Index für den Import von Dokumenten vor. Der alte Index wird dabei gelöscht. Um nach Begriffen mit diakritischen Zeichen suchen zu können wird eine eigener Analyzer mit [ASCII-Folding](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/asciifolding-token-filter.html) angelegt. Dieser Analyser ersetze diakritische Zeichen mit den entsprechenden ASCII-Zeichen. So wird _Conceição_ im Feld **body** zu _Conceicao_ im Feld **body.folded**.
 
 ```
 curl -XPUT localhost:9200/joram -d '
@@ -45,6 +52,8 @@ curl -XPUT localhost:9200/joram -d '
   }
 }'
 ```
+
+Das ASCII-Folding betrifft auch das Mapping:
 
 ```
 curl -XPUT localhost:9200/joram/_mapping/doc -d '
@@ -76,7 +85,7 @@ url -XPUT 'localhost:9200/_settings' -d '
 ```
 
 ### import.js
-Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltextsuchmaschine [Elasticsearch](https://www.elastic.co/products/elasticsearch) zum Einsatz. Das Skript importiert die Dokumente in Elasticsearch und ergänzt die Dokumente um ein paar Metadaten.
+Das Skript importiert die Dokumente in Elasticsearch und ergänzt die Dokumente um ein paar Metadaten.
 
 ```javascript
 {
@@ -107,8 +116,72 @@ Die Suche ist eine Webanwendung, welche auf den Elasticsearch-Service zugreift. 
 
 Die Suchmaske ist dafür gedacht, dass ein Team von Journalisten einfach in den Dokumente des JORAM recherchieren kann. 
 
-### searchList.js
-Um mehrere Namen zu suchen kann man das Suchskript mit einer Liste füttern. Das Skript verwendet den Elasticsearch-Service und gibt eine CSV-Datei der jeweiligen Anzahl an Treffen pro Name zurück. Gibt es (viele) Treffer für einen Namen, kann das ein Indiz dafür sein, dass die Person auf Madeira eine Unternehmen hat.    
+## Dokumente analysieren
+
+### findNames.js
+Um nach mehreren Namen zu suchen, kann man eine Listensuche durchführen. Das Skript verwendet den Elasticsearch-Service und gibt eine CSV-Datei der jeweiligen Anzahl an Treffen pro Name zurück. Gibt es (viele) Treffer für einen Namen, kann das ein Indiz dafür sein, dass die Person auf Madeira ein Unternehmen hat.
+
+```
+$ node findNames.js ./names.csv ./results.csv
+Finished processing 48 names
+Saved file results.csv
+```
+
+### findUnique.js
+Findet alle eindeutigen Unternehmen und Personen. Dazu werden die Dokumente nach den neunstelligen portugiesischen Steuernummern (NIFs und NIPCs) durchsucht. Hierfür kommen folgende reguläre Ausdrücke zum Einsatz:
+
+- persönliche Steuernummer NIF: `\\s[12][\\d|\\s]{7,9}\\d\\s`
+- Steuernummer eines Unternehmens NIPC: `\\s[5678][\\d|\\s]{7,9}\\d\\s`
+
+```
+$ node findUnique.js ./text 
+Completed search for 2950 documents
+Found 5140 unique NIFs 22610
+Found 7795 unique NIPCs 40904
+Saved file results/uniqueNIFs.txt
+Saved file results/uniqueNIPCs.txt
+```
+
+### findRelated.js
+Findet alle Unternehmen für die eine Person gearbeitet hat. Erst werden die Dokumenten nach Vorkommen der Person durchsucht, dann werden jeweils damit verbunden Unternehmen aufgelistet (**total matches**). Im Gegensatz dazu gibt **unique matches** die Anzahl aller eindeutigen Unternehmen wieder. Hat eine Person also mehrfach für das gleiche Unternehmen gearbeitet, wir das Unternehmen nur einmal gezählt.
+
+```
+$ node findRelated.js ./text "Roberto Luiz Homem"
+Completed search for Roberto Luiz Homem
+Found 323 unique matches from 526 total matches
+Saved file results/roberto-luiz-homem.txt
+```
+
+### findRelatedBatch.js
+Siehe **findRelated.js**. Findet für eine Liste von Personen die (Anzahl der) zugehörigen Unternehmen.
+
+```
+$ node findRelatedBatch.js ./nifs.txt
+...
+Found 1 unique matches from 1 total matches
+Saved file result/289971330.txt
+Completed search for 289965543
+Found 1 unique matches from 1 total matches
+Saved file result/289965543.txt
+```
+
+### getCompanyInfo.js
+Findet für die Steuernummer eines Unternehmens den zugehörigen Namen, Stadt und Aktivitäten der letzten Jahre. Kann umgekehrt auch dazu verwendet werden, Namen zu Steuernummern aufzulösen. Das Skript verwendet die [Schnittstelle](https://www.racius.com/app/searchsolr/autocomplete/?q=511136706) des portugiesischen Dienstleisters **Racius**.
+
+```
+$ node getCompanyInfo.js "511136706"
+[ { id: 619078,
+    title: 'Ciboule - Trading e Marketing Lda (Zona Franca da Madeira)',
+    value: 'Ciboule - Trading e Marketing Lda (Zona Franca da Madeira)',
+    nif: 511136706,
+    city: 'Funchal',
+    url: 'ciboule-trading-e-marketing-lda-zona-franca-da-madeira',
+    years: [ 2015, 2014, 2013 ],
+    last_year: true } ]
+```
+
+### countPages.sh
+Kleines Skript um die Anzahl aller Seiten mehrerer PDF-Dokumente zu ermitteln.
 
 ## Verbesserungen
 - Globale Konfigurationsdatei anlegen
