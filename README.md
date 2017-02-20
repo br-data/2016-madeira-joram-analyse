@@ -1,9 +1,10 @@
 # Steuerparadies Madeira – Analyse
 Sammlung an Werkzeugen um das Amtsblatt von Madeira ([Joram](http://www.gov-madeira.pt/joram/4serie/)) zu durchsuchen und analysieren. Madeira ist ein Steuerparadies mit Segen der EU-Kommission. Die Analyse dient dazu, bekannte Privatpersonen und internationale Großkonzerne zu finden, die auf Madeira tätig sind. Außerdem helfen die Werkzeuge dabei Scheinarbeitsplätze und Briefkastenfirmen aufzudecken.
 
-**Suchmaschine**: http://ddj.br.de/mammon
-**Benutzer**: jedermann
-**Passwort**: ab.auf.die.insel!
+- **Suchmaschine**: http://ddj.br.de/mammon (Benutzer: jedermann, Passwort: ab.auf.die.insel!)
+- **Artikel**: http://br.de/madeira/artikel
+
+Die Inhalte der Veröffentlichung finden sich im Repo [mammon-website](https://github.com/digitalegarage/mammon-website).
 
 ## Verwendung
 1. Repository klonen `git clone https://...`
