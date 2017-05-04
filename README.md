@@ -157,7 +157,7 @@ Saved file results/roberto-luiz-homem.txt
 Siehe **findRelated.js**. Findet für eine Liste von Personen die (Anzahl der) zugehörigen Unternehmen.
 
 ```
-$ node findRelatedBatch.js ./nifs.txt
+$ node findRelatedBatch.js ./nifs.txt ./nifs-result.txt
 ...
 Found 1 unique matches from 1 total matches
 Saved file result/289971330.txt
@@ -179,6 +179,18 @@ $ node getCompanyInfo.js "511136706"
     url: 'ciboule-trading-e-marketing-lda-zona-franca-da-madeira',
     years: [ 2015, 2014, 2013 ],
     last_year: true } ]
+```
+
+### getCompanyInfoBatch.js
+Siehe **getCompanyInfo.js**. Findet für eine Liste von NIPCs oder Firmenname den jeweiligen Auszug aus dem [Racius](https://www.racius.com/)-Unternehmensregister und speichert diesen als CSV.
+
+```
+$ node getCompanyInfoBatch.js ./nipcs.txt ./nipcs-result.csv
+...
+Found Vox Populi - Comércio Internacional e Serviços Lda (Zona Franca da Madeira)
+Found Cyrus - Comercio, Serviços de Consultoria e Investimentos Lda (Zona Franca da Madeira)
+Found Fidumar - Management, Comércio e Serviços S.A. (Zona Franca da Madeira)
+Finished processing 3 names
 ```
 
 ### countPages.sh
