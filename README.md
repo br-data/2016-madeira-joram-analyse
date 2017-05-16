@@ -13,8 +13,19 @@ Die Inhalte der Veröffentlichung finden sich im Repo [mammon-website](https://g
 
 **Hinweis:** Node.js bekommt standardgemäß nur 512 MB Arbeitsspeicher. Unter Umständen reicht das nicht aus und führt zu einem Fehler *FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - process out of memory*. In diesem Fall kann man den verfügbaren Speicher einmalig auf 4 GB erhöhen: `node --max_old_space_size=4000000 import.js`
 
-## Abhängigkeiten
-Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltextsuchmaschine [Elasticsearch](https://www.elastic.co/products/elasticsearch) zum Einsatz. Um die Dokumentensuche nutzen zu können, muss Elasticsearch in der Version 2.3 installiert sein. 
+## Elasticsearch
+Um die extrahierten Dokumente schnell durchsuchen zu können, kommt die Volltextsuchmaschine [Elasticsearch](https://www.elastic.co/products/elasticsearch) zum Einsatz. Um die Dokumentensuche nutzen zu können, muss Elasticsearch in der Version 2.4 installiert sein.
+
+Für die Entwicklung wird die Anzahl der Replicas auf 0 gesetzt, um _Unassigned shards_-Warnungen zu vermeiden. 
+
+```
+url -XPUT 'localhost:9200/_settings' -d '         
+{                  
+  index: {
+    number_of_replicas : 0
+  }
+}'
+```
 
 ## Datenquelle
 Die Regionalregierung Madeiras veröffentlicht nahezu täglich das Amtsblatt [Jornal Oficial da Região Autónoma da Madeira](http://www.gov-madeira.pt/joram/4serie/), kurz Joram. Dort werden alle Firmeneintragungen, Änderungen der Geschäftsführung oder Umbenennungen veröffentlicht. Viele Ausgaben des Joram liegen jedoch nur als eingescannte Dokumente vor und waren für Suchmaschinen nicht lesbar. Der Dokumenten-Workflow schafft hier Abhilfe.
@@ -36,7 +47,15 @@ Speichert alle Inhalte der PDFs als Textdatei. Manche PDFs enthalten Scans von D
 **Hinweis:** Tika könnte auch Metadaten aus den Dokumenten extrahieren, diese werden aber in diesem Fall ignoriert, da sie keinen Erkenntnisgewinn versprechen.
 
 ### prepare.js
-Das Skript bereitet einen Elasticsearch-Index für den Import von Dokumenten vor. Der alte Index wird dabei gelöscht. Um nach Begriffen mit diakritischen Zeichen suchen zu können wird eine eigener Analyzer mit [ASCII-Folding](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/asciifolding-token-filter.html) angelegt. Dieser Analyser ersetze diakritische Zeichen mit den entsprechenden ASCII-Zeichen. So wird _Conceição_ im Feld **body** zu _Conceicao_ im Feld **body.folded**.
+Das Skript bereitet einen Elasticsearch-Index für den Import von Dokumenten vor. Der alte Index wird dabei gelöscht. Um nach Begriffen mit diakritischen Zeichen suchen zu können wird eine eigener Analyzer mit [ASCII-Folding](https://www.elastic.co/guide/en/elasticsearch/guide/2.x/asciifolding-token-filter.html) angelegt. Der Analyser ersetzt diakritische Zeichen mit den entsprechenden ASCII-Zeichen. So wird _Conceição_ im Feld **body** zu _Conceicao_ im Feld **body.folded**.
+
+Skript starten:
+
+```
+$ node prepare.js
+```
+
+Der Analyzer kann auch manuell über das REST-Interface angelegt werden:
 
 ```
 curl -XPUT localhost:9200/joram -d '
@@ -54,7 +73,7 @@ curl -XPUT localhost:9200/joram -d '
 }'
 ```
 
-Das ASCII-Folding betrifft auch das Mapping:
+Der Mapper muss auch im Mapping angegeben werden:
 
 ```
 curl -XPUT localhost:9200/joram/_mapping/doc -d '
@@ -74,19 +93,10 @@ curl -XPUT localhost:9200/joram/_mapping/doc -d '
 }'
 ```
 
-Für die Entwicklung wird die Anzahl der Replicas auf 0 gesetzt, um _Unassigned shards_-Warnungen zu vermeiden. 
-
-```
-url -XPUT 'localhost:9200/_settings' -d '         
-{                  
-  index: {
-    number_of_replicas : 0
-  }
-}'
-```
-
 ### import.js
 Das Skript importiert die Dokumente in Elasticsearch und ergänzt die Dokumente um ein paar Metadaten.
+
+Datenmodell:
 
 ```javascript
 {
@@ -100,6 +110,12 @@ Das Skript importiert die Dokumente in Elasticsearch und ergänzt die Dokumente 
 }
 ```
 
+Skript starten:
+
+```
+$ node import.js
+```
+
 ### api.js
 Die Daten des Elasticsearch-Clusters kann man über eine API-Service abfragen. Es gibt verschiedene Möglichkeiten einen Anfrage zustellen:
 
@@ -108,9 +124,13 @@ Die Daten des Elasticsearch-Clusters kann man über eine API-Service abfragen. E
 - `GET http://localhost:3003/fuzzy/:query` Fuzzy-Suche, welche einzelne Begriffe findet, auch wenn sie Buchstabendreher enthalten **Jhon** [(mehr Infos)](// https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html).
 - `GET http://localhost:3003/regexp/:query` Regex-Suche für einzelne Begriffe **J.hn*** [(mehr Infos)](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html).
 
-Der Elasticsearch-Service wird auch von der Suche verwendet. Die Optionen in der Suchmaske (Standard, Custom, Fuzzy, Regex) bilden genau diese Routen ab. 
+Der Elasticsearch-Service wird auch von der Suche verwendet. Die Optionen in der Suchmaske (Standard, Custom, Fuzzy, Regex) bilden genau diese Routen ab.
 
-Der Elasticsearch-Service kann mit `node api.js POR` gestarten werden.
+Server starten:
+
+```
+$ node api.js
+```
 
 ### Suchmaske /search
 Die Suche ist eine Webanwendung, welche auf den Elasticsearch-Service zugreift. Für jede Suchanfrage bekommt man eine Liste von Dokumenten zurück in denen der Suchbegriff gefunden wurde. Über zwei Buttons kann man dann schnell auf das Original-PDF oder die Text-Version des Dokuments zugreifen.
