@@ -44,6 +44,12 @@ Lädt alle PDFs aus dem Joram herunter. Das Skript verwendet dabei die Biblothek
 ### extract.js
 Speichert alle Inhalte der PDFs als Textdatei. Manche PDFs enthalten Scans von Dokumenten. Die Texte dieser Scans werden mithilfe von [Tesseract](https://github.com/tesseract-ocr/tesseract) ausgelesen (OCR). Das Skript verwendet [Apache Tika](https://tika.apache.org/) und [node-tika](https://github.com/ICIJ/node-tika) als Schnittstelle zwischen Node.js und Tika (Java). Die extrahierten Texte werden im Verzeichnis `./text` abgelegt.
 
+Das Extrahieren von PDF-Dokumenten über die Node-Tika-Schnittstelle ist manchmal recht fehleranfällig. Sollte das Extrahieren nicht funktionieren, kann man Apache Tika auch direkt verwenden. Dazu einfach das [Apache Tika-App-JAR](https://tika.apache.org/download.html) herunterladen und von der Kommandozeile aus starten. Beispiel:
+
+```
+$ java -jar tika-app-1.14.jar -t -i ./pdf -o ./text   
+```
+
 **Hinweis:** Tika könnte auch Metadaten aus den Dokumenten extrahieren, diese werden aber in diesem Fall ignoriert, da sie keinen Erkenntnisgewinn versprechen.
 
 ### prepare.js
